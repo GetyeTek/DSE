@@ -1559,6 +1559,152 @@ body.dark-mode .audio-player .close-button:focus {
 
 /* --- End Audio Player Modal Styles --- */
 
+
+/* --- Download Manager Modal Styles --- */
+
+/* Inherits .modal-overlay from Audio Player */
+
+.download-modal-content {
+    /* Inherits basic .modal-content styles */
+    max-width: 600px;
+    width: 95%;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: var(--space-sm);
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.modal-description {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.download-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.download-language-group {
+    border: 1px solid var(--border-main);
+    border-radius: 8px;
+    padding: var(--space-md);
+    margin: 0;
+}
+
+.download-language-group legend {
+    padding: 0 var(--space-sm);
+    font-weight: 600;
+    color: var(--link-color);
+    font-family: var(--font-ui);
+}
+
+.download-option-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) 0;
+    border-bottom: 1px dashed var(--border-light);
+    cursor: pointer;
+}
+
+.download-language-group .download-option-item:last-child {
+    border-bottom: none;
+}
+
+.option-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.option-title {
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.option-status {
+    font-size: 0.85em;
+    font-style: italic;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.option-status[data-status="downloaded"] {
+    color: var(--sacred-gold);
+    font-weight: 500;
+}
+.option-status[data-status="error"] {
+    color: var(--text-danger);
+}
+
+/* Re-using toggle-switch styles from Settings, ensured they work here */
+.download-option-item .toggle-switch {
+    flex-shrink: 0;
+    margin-left: var(--space-md);
+}
+
+.download-progress-container {
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background-color: var(--bg-subtle);
+    border-radius: 6px;
+    border: 1px solid var(--border-main);
+}
+
+#downloadModalProgressMessage {
+    margin: 0 0 var(--space-xs) 0;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+#downloadModalProgressBar {
+    width: 100%;
+    height: 8px;
+    accent-color: var(--sacred-gold);
+}
+
+.modal-footer {
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-light);
+    text-align: right;
+}
+
+/* Dark Mode Adjustments for Modal */
+body.dark-mode .download-language-group {
+    border-color: var(--border-main);
+}
+body.dark-mode .modal-header, body.dark-mode .modal-footer {
+    border-color: var(--border-main);
+}
+body.dark-mode .download-option-item {
+    border-bottom-color: var(--border-main);
+}
+
+
 /* --- Responsive Adjustments --- */
 @media (max-width: 767px) {
     .view-tabs-container { display: none; }
