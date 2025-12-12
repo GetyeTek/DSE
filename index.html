@@ -551,6 +551,83 @@
     </div> <!-- /.app-container -->
 
 
+    <!-- Download Manager Modal -->
+    <div id="downloadModal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="modal-content download-modal-content">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 class="modal-title" style="margin:0;">Offline Resources</h3>
+                <button id="closeDownloadModalBtn" class="close-button" aria-label="Close" style="font-size:1.5rem; background:none; border:none; cursor:pointer;">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Select the resources you want to make available offline.</p>
+                
+                <div class="download-options-container">
+                    <!-- Amharic Group -->
+                    <fieldset class="download-language-group">
+                        <legend>Amharic (አማርኛ)</legend>
+                        <label class="download-option-item" data-package-id="am-bible">
+                            <input type="checkbox">
+                            <div class="option-details">
+                                <span class="option-title">Bible Text</span>
+                                <span class="option-status" data-status="not_downloaded">Not downloaded</span>
+                            </div>
+                        </label>
+                        <label class="download-option-item" data-package-id="am-commentary">
+                            <input type="checkbox">
+                            <div class="option-details">
+                                <span class="option-title">Commentary</span>
+                                <span class="option-status" data-status="not_downloaded">Not downloaded</span>
+                            </div>
+                        </label>
+                        <label class="download-option-item" data-package-id="am-ref">
+                            <input type="checkbox">
+                            <div class="option-details">
+                                <span class="option-title">Cross-References</span>
+                                <span class="option-status" data-status="not_downloaded">Not downloaded</span>
+                            </div>
+                        </label>
+                    </fieldset>
+
+                    <!-- English Group -->
+                    <fieldset class="download-language-group">
+                        <legend>English</legend>
+                        <label class="download-option-item" data-package-id="en-bible">
+                            <input type="checkbox">
+                            <div class="option-details">
+                                <span class="option-title">Bible Text</span>
+                                <span class="option-status" data-status="not_downloaded">Not downloaded</span>
+                            </div>
+                        </label>
+                        <label class="download-option-item" data-package-id="en-commentary">
+                            <input type="checkbox">
+                            <div class="option-details">
+                                <span class="option-title">Commentary</span>
+                                <span class="option-status" data-status="not_downloaded">Not downloaded</span>
+                            </div>
+                        </label>
+                        <label class="download-option-item" data-package-id="en-ref">
+                            <input type="checkbox">
+                            <div class="option-details">
+                                <span class="option-title">Cross-References</span>
+                                <span class="option-status" data-status="not_downloaded">Not downloaded</span>
+                            </div>
+                        </label>
+                    </fieldset>
+                </div>
+
+                <div id="downloadModalProgressContainer" class="download-progress-container" style="display:none;">
+                    <p id="downloadModalProgressMessage">Initializing...</p>
+                    <progress id="downloadModalProgressBar" value="0" max="100"></progress>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 20px; text-align: right; display:flex; justify-content:flex-end; gap:10px;">
+                    <button id="deleteSelectedDownloadsBtn" class="button-danger" style="display:none;">Delete Selected</button>
+                    <button id="startSelectedDownloadsBtn" class="button-primary">Update Downloads</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Supabase SDK -->
     <!-- Using a recent stable version -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.1/dist/umd/supabase.min.js"></script>
