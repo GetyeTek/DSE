@@ -291,6 +291,15 @@ export function init(dependencies) {
         const isActive = verseCardDropdownMenu.classList.toggle('active');
         verseCardMenuDots.setAttribute('aria-expanded', String(isActive));
     });
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+        if (verseCardDropdownMenu && 
+            verseCardDropdownMenu.classList.contains('active') && 
+            !verseCardMenuDots.contains(event.target) && 
+            !verseCardDropdownMenu.contains(event.target)) {
+            _hideDropdownMenu();
+        }
+    });
     verseCardSaveBtn?.addEventListener('click', (e) => { e.stopPropagation(); _handleSaveFavourite(); });
     verseCardShareBtn?.addEventListener('click', (e) => { e.stopPropagation(); _handleShare(); });
     
