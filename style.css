@@ -634,6 +634,11 @@ body.dark-mode .loading-dots, body.dark-mode .loading-dots::after { color: var(-
     margin: 0 auto;
     /* Ensure this uses the main-app-content background */
     background: var(--bg-main);
+    /* Ensure background covers full height even when empty */
+    min-height: calc(100vh - 140px);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 .notes-view-panel { /* Common style for sub-panels */
     padding-top: var(--space-md); /* Spacing below tabs */
