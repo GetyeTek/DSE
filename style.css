@@ -3101,6 +3101,112 @@ body.dark-mode .chapter-introduction:hover .introduction-text::after {
 }
 
 
+/* ==========================================================================
+   Download Modal Styles
+   ========================================================================== */
+
+.download-modal-content {
+    max-width: 600px;
+    width: 90vw;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.modal-description {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: var(--space-sm) 0 var(--space-lg);
+    line-height: 1.5;
+}
+
+.download-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.download-language-group {
+    border: 1px solid var(--border-main);
+    border-radius: 8px;
+    padding: var(--space-sm) var(--space-md) var(--space-xs);
+    margin: 0;
+}
+
+.download-language-group legend {
+    padding: 0 var(--space-sm);
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.download-option-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.download-language-group .download-option-item:last-child {
+    border-bottom: none;
+}
+
+.option-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.option-title {
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.option-status {
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+/* Status Colors */
+.option-status[data-status="downloaded"] {
+    color: #28a745; /* Green */
+    font-weight: 500;
+}
+
+.option-status[data-status="not_downloaded"] {
+    color: var(--text-muted);
+}
+
+.option-status[data-status="error"] {
+    color: var(--text-danger);
+}
+
+/* Modal Footer for buttons */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-light);
+}
+
+
+
 
 /* ==========================================================================
    Download Modal Styles
