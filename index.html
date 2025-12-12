@@ -859,6 +859,106 @@
         </div>
     </div>
 
+    <!-- Download Manager Modal -->
+    <div id="downloadModal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="modal-content download-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Manage Offline Resources</h3>
+                <button id="closeDownloadModalBtn" class="close-button" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Select resources to download. Green indicates content is available offline.</p>
+                
+                <div class="download-options-container">
+                    <!-- Amharic Resources -->
+                    <fieldset class="download-language-group">
+                        <legend>Amharic (አማርኛ)</legend>
+                        
+                        <label class="download-option-item" data-package-id="am-bible">
+                            <div class="option-details">
+                                <span class="option-title">Bible (Scripture)</span>
+                                <span class="option-status" data-status="checking">Checking...</span>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider round"></span>
+                            </div>
+                        </label>
+
+                        <label class="download-option-item" data-package-id="am-commentary">
+                            <div class="option-details">
+                                <span class="option-title">Commentary</span>
+                                <span class="option-status" data-status="checking">Checking...</span>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider round"></span>
+                            </div>
+                        </label>
+
+                        <label class="download-option-item" data-package-id="am-ref">
+                            <div class="option-details">
+                                <span class="option-title">Cross-References</span>
+                                <span class="option-status" data-status="checking">Checking...</span>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider round"></span>
+                            </div>
+                        </label>
+                    </fieldset>
+
+                    <!-- English Resources -->
+                    <fieldset class="download-language-group">
+                        <legend>English</legend>
+                        
+                        <label class="download-option-item" data-package-id="en-bible">
+                            <div class="option-details">
+                                <span class="option-title">Bible (Scripture)</span>
+                                <span class="option-status" data-status="checking">Checking...</span>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider round"></span>
+                            </div>
+                        </label>
+
+                        <label class="download-option-item" data-package-id="en-commentary">
+                            <div class="option-details">
+                                <span class="option-title">Commentary</span>
+                                <span class="option-status" data-status="checking">Checking...</span>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider round"></span>
+                            </div>
+                        </label>
+
+                        <label class="download-option-item" data-package-id="en-ref">
+                            <div class="option-details">
+                                <span class="option-title">Cross-References</span>
+                                <span class="option-status" data-status="checking">Checking...</span>
+                            </div>
+                            <div class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="toggle-slider round"></span>
+                            </div>
+                        </label>
+                    </fieldset>
+                </div>
+
+                <!-- Modal Progress Bar -->
+                <div id="downloadModalProgressContainer" class="download-progress-container" style="display: none;">
+                    <p id="downloadModalProgressMessage">Initializing...</p>
+                    <progress id="downloadModalProgressBar" value="0" max="100"></progress>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="startSelectedDownloadsBtn" class="button-primary">Start Download</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Supabase SDK -->
     <!-- Using a recent stable version -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.1/dist/umd/supabase.min.js"></script>
