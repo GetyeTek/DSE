@@ -892,6 +892,94 @@
         </div>
     </div>
     <!-- End Audio Player Modal -->
+
+
+    <!-- Download Modal -->
+    <div id="downloadModal" class="modal-overlay hidden" aria-modal="true" aria-labelledby="downloadModalTitle" aria-hidden="true">
+        <div class="modal-content download-modal-content">
+            <header class="modal-header">
+                <h2 id="downloadModalTitle" class="modal-title">Manage Offline Resources</h2>
+                <button id="closeDownloadModalBtn" class="close-button" aria-label="Close download options">脳</button>
+            </header>
+            <p class="modal-description">Select the resources you want to download or clear. Downloaded items can be used without an internet connection.</p>
+
+            <div class="download-options-container">
+                <fieldset class="download-language-group">
+                    <legend>Amharic (釆犪垱釄姏)</legend>
+                    <div class="download-option-item" data-resource-key="am-bible">
+                        <div class="option-details">
+                            <span class="option-title">Amharic Bible</span>
+                            <span class="option-status" data-status="checking">Checking...</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="download-checkbox">
+                            <span class="toggle-slider round"></span>
+                        </label>
+                    </div>
+                    <div class="download-option-item" data-resource-key="am-commentary">
+                        <div class="option-details">
+                            <span class="option-title">Amharic Commentary</span>
+                            <span class="option-status" data-status="checking">Checking...</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="download-checkbox">
+                            <span class="toggle-slider round"></span>
+                        </label>
+                    </div>
+                    <div class="download-option-item" data-resource-key="am-ref">
+                        <div class="option-details">
+                            <span class="option-title">Amharic Cross-References</span>
+                            <span class="option-status" data-status="checking">Checking...</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="download-checkbox">
+                            <span class="toggle-slider round"></span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset class="download-language-group">
+                    <legend>English</legend>
+                    <div class="download-option-item" data-resource-key="en-bible">
+                        <div class="option-details">
+                            <span class="option-title">English Bible</span>
+                            <span class="option-status" data-status="checking">Checking...</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="download-checkbox">
+                            <span class="toggle-slider round"></span>
+                        </label>
+                    </div>
+                    <div class="download-option-item" data-resource-key="en-commentary">
+                        <div class="option-details">
+                            <span class="option-title">English Commentary</span>
+                            <span class="option-status" data-status="checking">Checking...</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="download-checkbox">
+                            <span class="toggle-slider round"></span>
+                        </label>
+                    </div>
+                    <div class="download-option-item" data-resource-key="en-ref">
+                        <div class="option-details">
+                            <span class="option-title">English Cross-References</span>
+                            <span class="option-status" data-status="checking">Checking...</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="download-checkbox">
+                            <span class="toggle-slider round"></span>
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="modal-footer">
+                <button id="clearSelectedDownloadsBtn" class="button-danger">Clear Selected</button>
+                <button id="startSelectedDownloadsBtn" class="button-primary">Download Selected</button>
+            </div>
+        </div>
+    </div>
+    <!-- End Download Modal -->
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
