@@ -4,8 +4,8 @@
 console.log("[Module Init] api.js loaded.");
 
 // --- Supabase Configuration ---
-const SUPABASE_URL = 'https://kctnqabxxhlziwipepyu.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjdG5xYWJ4eGhseml3aXBlcHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyMTk3MjIsImV4cCI6MjA2MTc5NTcyMn0.pLJK-G8uij-2m0WYluWa2RjvehVX15mIH-OW0AWJmc0';
+const SUPABASE_URL = 'https://vlzgfaqrnyiqfxxxvtas.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsemdmYXFybnlpcWZ4eHh2dGFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1NTk5NDAsImV4cCI6MjA4MTEzNTk0MH0.y93d68JWyGL7NKXZEHLunAuayMEWw1K6yATFGLxkUxY';
 const SUPABASE_FETCH_TIMEOUT = 7000; // 7 seconds timeout
 
 let supabaseClient = null;
