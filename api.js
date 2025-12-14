@@ -142,12 +142,38 @@ export async function fetchVerseText({ bookId, chapter, startVerse, endVerse, la
  */
 export async function fetchChapterContent({ bookId, chapter, language }) {
     if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    return supabaseClient
-        .from(`verses_${language}`)
-        .select(`book_id, chapter_num, verse_num, verse_display_num, verse_text, commentary_text, chapters_${language}(header_text)`)
-        .eq("book_id", bookId)
-        .eq("chapter_num", chapter)
-        .order("verse_num", { ascending: true });
+    
+    try {
+        const [versesRes, commRes] = await Promise.all([
+            supabaseClient
+                .from(`verses_${language}`)
+                .select(`book_id, chapter_num, verse_num, verse_display_num, verse_text, chapters_${language}(header_text)`)
+                .eq("book_id", bookId)
+                .eq("chapter_num", chapter)
+                .order("verse_num", { ascending: true }),
+            supabaseClient
+                .from(`commentary_${language}`)
+                .select("verse_num, commentary_text")
+                .eq("book_id", bookId)
+                .eq("chapter_num", chapter)
+        ]);
+
+        if (versesRes.error) throw versesRes.error;
+        
+        const commentaries = commRes.data || [];
+        const mergedData = versesRes.data.map(v => {
+            const comm = commentaries.find(c => c.verse_num === v.verse_num);
+            return {
+                ...v,
+                commentary_text: comm ? comm.commentary_text : null
+            };
+        });
+
+        return { data: mergedData, error: null };
+    } catch (error) {
+        console.error("API Error fetchChapterContent:", error);
+        return { data: null, error };
+    }
 }
 
 /**
@@ -161,41 +187,51 @@ export async function fetchChapterContent({ bookId, chapter, language }) {
 export async function fetchAllVersesForBook({ bookId, language, onCancel }) {
     if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
 
-    let allVersesForBook = [];
-    const pageSize = 1000;
-    let offset = 0;
-    let finished = false;
-
-    while (!finished) {
-        if (onCancel && onCancel()) {
-            return { data: null, error: new Error("Cancelled during book fetch pagination") };
-        }
-        try {
-            const { data, error } = await supabaseClient
-                .from(`verses_${language}`)
-                .select("book_id, chapter_num, verse_num, verse_display_num, verse_text, commentary_text")
-                .eq("book_id", bookId)
-                .order("chapter_num", { ascending: true })
-                .order("verse_num", { ascending: true })
-                .range(offset, offset + pageSize - 1);
-
+    // Internal helper for paginated fetching
+    async function _fetchFullTable(tableName, columns, orderBy = []) {
+        let allRows = [];
+        const pageSize = 1000;
+        let offset = 0;
+        let finished = false;
+        while (!finished) {
+            if (onCancel && onCancel()) throw new Error("Cancelled");
+            let query = supabaseClient.from(tableName).select(columns).eq("book_id", bookId);
+            orderBy.forEach(o => query = query.order(o.col, { ascending: o.asc }));
+            
+            const { data, error } = await query.range(offset, offset + pageSize - 1);
             if (error && error.code !== 'PGRST116') throw error;
+            
             if (!data || data.length === 0) {
                 finished = true;
             } else {
-                allVersesForBook.push(...data);
-                if (data.length < pageSize) {
-                    finished = true;
-                } else {
-                    offset += pageSize;
-                }
+                allRows.push(...data);
+                if (data.length < pageSize) finished = true;
+                else offset += pageSize;
             }
-        } catch (error) {
-            console.error(`API Error fetching verses for book ${bookId} (offset: ${offset}):`, error);
-            return { data: null, error };
         }
+        return allRows;
     }
-    return { data: allVersesForBook, error: null };
+
+    try {
+        const [verses, commentaries] = await Promise.all([
+            _fetchFullTable(`verses_${language}`, "book_id, chapter_num, verse_num, verse_display_num, verse_text", [{col: "chapter_num", asc: true}, {col: "verse_num", asc: true}]),
+            _fetchFullTable(`commentary_${language}`, "chapter_num, verse_num, commentary_text")
+        ]);
+
+        // Merge commentary
+        const commMap = new Map();
+        commentaries.forEach(c => commMap.set(`${c.chapter_num}:${c.verse_num}`, c.commentary_text));
+        
+        const merged = verses.map(v => ({
+            ...v,
+            commentary_text: commMap.get(`${v.chapter_num}:${v.verse_num}`) || null
+        }));
+
+        return { data: merged, error: null };
+    } catch (error) {
+        console.error(`API Error fetching book ${bookId}:`, error);
+        return { data: null, error };
+    }
 }
 
 /**
