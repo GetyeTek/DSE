@@ -184,7 +184,7 @@ export async function fetchChapterContent({ bookId, chapter, language }) {
  * @param {function} onCancel - A function that returns true if the download should be cancelled.
  * @returns {Promise<object>} A promise resolving to { data, error }. Data is an array of all verse objects for the book.
  */
-export async function fetchAllVersesForBook({ bookId, language, onCancel }) {
+export async function fetchAllVersesForBook({ bookId, language, onCancel, includeVerses = true, includeCommentary = true }) {
     if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
 
     // Internal helper for paginated fetching
@@ -213,21 +213,29 @@ export async function fetchAllVersesForBook({ bookId, language, onCancel }) {
     }
 
     try {
-        const [verses, commentaries] = await Promise.all([
-            _fetchFullTable(`verses_${language}`, "book_id, chapter_num, verse_num, verse_display_num, verse_text", [{col: "chapter_num", asc: true}, {col: "verse_num", asc: true}]),
-            _fetchFullTable(`commentary_${language}`, "chapter_num, verse_num, commentary_text")
-        ]);
-
-        // Merge commentary
-        const commMap = new Map();
-        commentaries.forEach(c => commMap.set(`${c.chapter_num}:${c.verse_num}`, c.commentary_text));
+        const promises = [];
         
-        const merged = verses.map(v => ({
-            ...v,
-            commentary_text: commMap.get(`${v.chapter_num}:${v.verse_num}`) || null
-        }));
+        // 1. Conditionally fetch Verses
+        if (includeVerses) {
+             promises.push(_fetchFullTable(`verses_${language}`, "book_id, chapter_num, verse_num, verse_display_num, verse_text", [{col: "chapter_num", asc: true}, {col: "verse_num", asc: true}]));
+        } else {
+             promises.push(Promise.resolve(null));
+        }
 
-        return { data: merged, error: null };
+        // 2. Conditionally fetch Commentary
+        if (includeCommentary) {
+             promises.push(_fetchFullTable(`commentary_${language}`, "chapter_num, verse_num, commentary_text"));
+        } else {
+             promises.push(Promise.resolve(null));
+        }
+
+        const [verses, commentaries] = await Promise.all(promises);
+
+        // Return unmerged arrays so cache.js can handle the merge logic
+        return { 
+            data: { verses: verses || [], commentaries: commentaries || [] }, 
+            error: null 
+        };
     } catch (error) {
         console.error(`API Error fetching book ${bookId}:`, error);
         return { data: null, error };
