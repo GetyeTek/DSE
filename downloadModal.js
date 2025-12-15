@@ -117,6 +117,40 @@ export function init() {
         }
     });
 
+    // Start Download Button Logic
+    startDownloadBtn?.addEventListener('click', () => {
+        const selectedPackages = [];
+        optionItems.forEach(item => {
+            const toggleInput = item.querySelector('input[type="checkbox"]');
+            if (toggleInput && toggleInput.checked && !toggleInput.disabled) {
+                selectedPackages.push(item.dataset.packageId);
+            }
+        });
+
+        if (selectedPackages.length > 0) {
+            hide(); // Close modal
+            import('./download.js').then(module => {
+                module.start(selectedPackages);
+            });
+        } else {
+            ui.showTempMessage("Please select at least one item to download.", "warning");
+        }
+    });
+}
+
+    // --- Event Listeners ---
+    
+    // Listener for the main trigger button in the settings page
+    openModalTrigger?.addEventListener('click', show);
+    
+    // Listeners for controls inside the modal
+    closeBtn?.addEventListener('click', hide);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            hide();
+        }
+    });
+
     startDownloadBtn?.addEventListener('click', () => {
         const selectedPackages = [];
         optionItems.forEach(item => {
