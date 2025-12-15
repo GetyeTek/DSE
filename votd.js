@@ -74,6 +74,7 @@ function _toggleFullscreen(show) {
 }
 
 /** Renders the VOTD card based on the internal module state. */
+/** Renders the VOTD card based on the internal module state. */
 function _renderUI() {
     if (!verseCard || !verseCardTitle || !verseCardText || !verseCardReference) {
         if (verseCard) verseCard.style.display = 'none';
@@ -87,9 +88,10 @@ function _renderUI() {
         verseCardText.innerHTML = '<em>Loading...</em>';
         verseCardReference.textContent = '';
         verseCard.style.display = '';
-        if (verseCardDropdownMenu) {
-            verseCardDropdownMenu.querySelectorAll('.menu-item').forEach(item => item.disabled = true);
-        }
+        // Disable actions while loading
+        if (verseCardShareBtn) verseCardShareBtn.disabled = true;
+        if (verseCardCopyBtn) verseCardCopyBtn.disabled = true;
+        if (verseCardSaveBtn) verseCardSaveBtn.disabled = true;
         return;
     }
 
@@ -97,6 +99,11 @@ function _renderUI() {
     verseCardText.innerHTML = votdState.text;
     verseCardReference.textContent = votdState.displayRef;
     verseCard.style.display = '';
+    
+    // Enable actions
+    if (verseCardShareBtn) verseCardShareBtn.disabled = false;
+    if (verseCardCopyBtn) verseCardCopyBtn.disabled = false;
+    if (verseCardSaveBtn) verseCardSaveBtn.disabled = false;
 }
 
 // ===================================================================================
