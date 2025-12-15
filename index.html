@@ -80,10 +80,13 @@
             <!-- Book List View -->
             <div id="bookListView" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-bookListView">
                 <h2 class="visually-hidden">Book List and Search</h2>
-                <div id="bookListSearchContainer" class="book-list-search">
-                    <label for="bookListSearchInput" class="visually-hidden">Search Reference or Keyword</label>
-                    <input type="search" id="bookListSearchInput" placeholder="e.g., Genesis 1:1, John 3, love" aria-label="Search Reference or Keyword">
-                    <button id="bookListSearchButton" class="button-primary" aria-label="Search books or keywords">Search</button>
+                <div id="bookListSearchContainer" class="book-list-search modern-search-wrapper">
+                    <div class="search-inner">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="search" id="bookListSearchInput" placeholder="Search scripture..." aria-label="Search Reference or Keyword">
+                        <button id="bookListClearSearchButton" class="clear-btn hidden" aria-label="Clear search"><i class="fas fa-times"></i></button>
+                    </div>
+                    <button id="bookListSearchButton" class="button-primary hidden" aria-label="Search">Go</button>
                 </div>
                 <div id="bookListNoResults" class="no-results-message" style="display: none;" aria-live="polite"></div>
                 <div id="bookListSearchResultsContainer" style="display: none;" aria-live="polite"></div>
@@ -389,10 +392,22 @@
         <!-- Bottom Navigation (Mobile Only) -->
          <nav class="bottom-nav" id="bottomNavTabs" role="navigation" aria-label="Main navigation">
              <div role="tablist">
-                 <button role="tab" aria-controls="themeView" aria-selected="true" data-view="themeView"><span class="icon" aria-hidden="true">🕊️</span>Themes</button>
-                 <button role="tab" aria-controls="bookListView" aria-selected="false" data-view="bookListView"><span class="icon" aria-hidden="true">📖</span>Books</button>
-                 <button role="tab" aria-controls="notesView" aria-selected="false" data-view="notesView"><span class="icon" aria-hidden="true">📝</span>Notes</button>
-                 <button role="tab" aria-controls="settingsView" aria-selected="false" data-view="settingsView"><span class="icon" aria-hidden="true">⚙️</span>Settings</button>
+                 <button role="tab" aria-controls="themeView" aria-selected="true" data-view="themeView">
+                    <i class="fas fa-layer-group icon"></i>
+                    <span>Themes</span>
+                 </button>
+                 <button role="tab" aria-controls="bookListView" aria-selected="false" data-view="bookListView">
+                    <i class="fas fa-book-bible icon"></i>
+                    <span>Books</span>
+                 </button>
+                 <button role="tab" aria-controls="notesView" aria-selected="false" data-view="notesView">
+                    <i class="fas fa-pen-nib icon"></i>
+                    <span>Journal</span>
+                 </button>
+                 <button role="tab" aria-controls="settingsView" aria-selected="false" data-view="settingsView">
+                    <i class="fas fa-sliders-h icon"></i>
+                    <span>Settings</span>
+                 </button>
              </div>
         </nav>
 
