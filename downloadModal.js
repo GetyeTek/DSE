@@ -54,20 +54,16 @@ function _updateOptionUI(itemEl, status, message, isDownloaded = false) {
 async function _checkAllPackageStatuses() {
     if (!optionItems) return;
 
-    // A placeholder for our future state management.
-    // For now, we'll simulate checking. In the next phase, this will read from currentState.downloadedPackages
-    const downloadedPackages = {
-        // Example: am_bible: true
-    };
+    // Read real status from currentState
+    const downloadedResources = currentState.downloadedResources || {};
 
     for (const item of optionItems) {
         const packageId = item.dataset.packageId;
-        const isDownloaded = downloadedPackages[packageId] === true;
+        const isDownloaded = downloadedResources[packageId] === true;
 
         if (isDownloaded) {
-            _updateOptionUI(item, 'downloaded', 'Downloaded', true);
+            _updateOptionUI(item, 'downloaded', 'Downloaded (Offline Available)', true);
         } else {
-            // In the future, we could add size estimates here
             _updateOptionUI(item, 'not_downloaded', 'Not downloaded', false);
         }
     }
@@ -122,8 +118,6 @@ export function init() {
     });
 
     startDownloadBtn?.addEventListener('click', () => {
-        // This is where the magic will happen.
-        // For now, we'll just log which packages are selected.
         const selectedPackages = [];
         optionItems.forEach(item => {
             const toggleInput = item.querySelector('input[type="checkbox"]');
@@ -133,5 +127,11 @@ export function init() {
         });
 
         if (selectedPackages.length > 0) {
-            ui.showTempMessage(`Starting download for: ${selectedPackages.join(', ')}`, 'info');
-            // In the next st
+            hide(); // Close modal
+            import('./download.js').then(module => {
+                module.start(selectedPackages);
+            });
+        } else {
+            ui.showTempMessage("Please select at least one item to download.", "warning");
+        }
+    });
