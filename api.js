@@ -64,35 +64,28 @@ export function getSupabaseClient() {
     return supabaseClient;
 }
 
+// Helper to invoke the Brain
+async function _invokeBrain(action, params = {}) {
+    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
+    try {
+        const { data, error } = await supabaseClient.functions.invoke('orchestrator', {
+            body: { action, ...params }
+        });
+        if (error) throw error;
+        return data; 
+    } catch (e) {
+        console.error(`[API] Orchestrator Error (${action}):`, e);
+        return { data: null, error: e };
+    }
+}
+
 /**
- * Fetches core application data: books, themes, and aliases in parallel.
- * @returns {Promise<object>} A promise that resolves to an object containing { books, themes, aliases, error }.
+ * Fetches core application data via Orchestrator.
  */
 export async function fetchCoreData() {
-    if (!supabaseClient) return { books: null, themes: null, aliases: null, error: new Error("Supabase client not initialized.") };
-
-    try {
-        const [booksResult, themesResult, aliasesResult] = await Promise.all([
-            supabaseClient.from('books').select('id, name, chapters, amharicName, testament, order, name_en'),
-            supabaseClient.from('themes').select('name, bookIds'),
-            supabaseClient.from('book_aliases').select('alias, book_id')
-        ]);
-
-        // Check for errors in each result
-        if (booksResult.error) throw booksResult.error;
-        if (themesResult.error) throw themesResult.error;
-        if (aliasesResult.error) throw aliasesResult.error;
-
-        return {
-            books: booksResult.data,
-            themes: themesResult.data,
-            aliases: aliasesResult.data,
-            error: null
-        };
-    } catch (error) {
-        console.error("API Error fetching core data:", error);
-        return { books: null, themes: null, aliases: null, error };
-    }
+    const { data, error } = await _invokeBrain('fetch_core_data');
+    if (error) return { books: null, themes: null, aliases: null, error };
+    return { books: data.books, themes: data.themes, aliases: data.aliases, error: null };
 }
 
 /**
@@ -100,13 +93,9 @@ export async function fetchCoreData() {
  * @returns {Promise<object>} A promise resolving to { data, error }.
  */
 export async function fetchVerseOfTheDayReference() {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    return supabaseClient
-        .from('daily_verses')
-        .select('book_id, chapter_num, verse_num')
-        .order('verse_date', { ascending: false })
-        .limit(1)
-        .single();
+    // The orchestrator handles fetching the ref logic
+    const { data, error } = await _invokeBrain('fetch_votd', { language: 'am' });
+    return { data, error };
 }
 
 /**
@@ -141,39 +130,7 @@ export async function fetchVerseText({ bookId, chapter, startVerse, endVerse, la
  * @returns {Promise<object>} A promise resolving to { data, error }. Data is an array of verse objects.
  */
 export async function fetchChapterContent({ bookId, chapter, language }) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    
-    try {
-        const [versesRes, commRes] = await Promise.all([
-            supabaseClient
-                .from(`verses_${language}`)
-                .select(`book_id, chapter_num, verse_num, verse_display_num, verse_text, chapters_${language}(header_text)`)
-                .eq("book_id", bookId)
-                .eq("chapter_num", chapter)
-                .order("verse_num", { ascending: true }),
-            supabaseClient
-                .from(`commentary_${language}`)
-                .select("verse_num, commentary_text")
-                .eq("book_id", bookId)
-                .eq("chapter_num", chapter)
-        ]);
-
-        if (versesRes.error) throw versesRes.error;
-        
-        const commentaries = commRes.data || [];
-        const mergedData = versesRes.data.map(v => {
-            const comm = commentaries.find(c => c.verse_num === v.verse_num);
-            return {
-                ...v,
-                commentary_text: comm ? comm.commentary_text : null
-            };
-        });
-
-        return { data: mergedData, error: null };
-    } catch (error) {
-        console.error("API Error fetchChapterContent:", error);
-        return { data: null, error };
-    }
+    return _invokeBrain('fetch_chapter_content', { bookId, chapter, language });
 }
 
 /**
@@ -185,61 +142,31 @@ export async function fetchChapterContent({ bookId, chapter, language }) {
  * @returns {Promise<object>} A promise resolving to { data, error }. Data is an array of all verse objects for the book.
  */
 export async function fetchAllVersesForBook({ bookId, language, onCancel, includeVerses = true, includeCommentary = true }) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
+    // Loops via Orchestrator Pages to download books
+    let allVerses = [];
+    let allComm = [];
+    let page = 0;
+    let hasMore = true;
 
-    // Internal helper for paginated fetching
-    async function _fetchFullTable(tableName, columns, orderBy = []) {
-        let allRows = [];
-        const pageSize = 1000;
-        let offset = 0;
-        let finished = false;
-        while (!finished) {
-            if (onCancel && onCancel()) throw new Error("Cancelled");
-            let query = supabaseClient.from(tableName).select(columns).eq("book_id", bookId);
-            orderBy.forEach(o => query = query.order(o.col, { ascending: o.asc }));
-            
-            const { data, error } = await query.range(offset, offset + pageSize - 1);
-            if (error && error.code !== 'PGRST116') throw error;
-            
-            if (!data || data.length === 0) {
-                finished = true;
-            } else {
-                allRows.push(...data);
-                if (data.length < pageSize) finished = true;
-                else offset += pageSize;
-            }
-        }
-        return allRows;
-    }
-
-    try {
-        const promises = [];
+    while (hasMore) {
+        if (onCancel && onCancel()) return { data: null, error: new Error("Cancelled") };
         
-        // 1. Conditionally fetch Verses
-        if (includeVerses) {
-             promises.push(_fetchFullTable(`verses_${language}`, "book_id, chapter_num, verse_num, verse_display_num, verse_text", [{col: "chapter_num", asc: true}, {col: "verse_num", asc: true}]));
-        } else {
-             promises.push(Promise.resolve(null));
-        }
+        const { data, error } = await _invokeBrain('fetch_book_full', {
+            bookId, language, page, includeVerses, includeCommentary
+        });
 
-        // 2. Conditionally fetch Commentary
-        if (includeCommentary) {
-             promises.push(_fetchFullTable(`commentary_${language}`, "chapter_num, verse_num, commentary_text"));
-        } else {
-             promises.push(Promise.resolve(null));
-        }
-
-        const [verses, commentaries] = await Promise.all(promises);
-
-        // Return unmerged arrays so cache.js can handle the merge logic
-        return { 
-            data: { verses: verses || [], commentaries: commentaries || [] }, 
-            error: null 
-        };
-    } catch (error) {
-        console.error(`API Error fetching book ${bookId}:`, error);
-        return { data: null, error };
+        if (error) return { data: null, error };
+        
+        if (data.verses) allVerses.push(...data.verses);
+        if (data.commentaries) allComm.push(...data.commentaries);
+        hasMore = data.hasMore;
+        page++;
     }
+
+    return { 
+        data: { verses: allVerses, commentaries: allComm }, 
+        error: null 
+    };
 }
 
 /**
@@ -251,14 +178,7 @@ export async function fetchAllVersesForBook({ bookId, language, onCancel, includ
  * @returns {Promise<object>} A promise resolving to { data, error }. Data is an object with `audio_url`.
  */
 export async function fetchAudioUrl({ bookId, chapter, language }) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    return supabaseClient
-        .from('audio_tracks')
-        .select('audio_url')
-        .eq('book_id', bookId)
-        .eq('chapter_num', chapter)
-        .eq('language', language)
-        .single();
+    return _invokeBrain('get_audio_url', { bookId, chapter, language });
 }
 
 /**
@@ -299,43 +219,21 @@ export async function fetchCrossRefDetails(docId) {
  * @returns {Promise<object>} A promise resolving to { data, error }. Data is the complete array of cross-ref objects.
  */
 export async function fetchAllCrossRefs({ onCancel, onProgress }) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    
     let allCrossrefs = [];
-    const pageSize = 1000;
-    let offset = 0;
-    let finished = false;
-    let page = 1;
+    let page = 0;
+    let hasMore = true;
 
-    while (!finished) {
-        if (onCancel && onCancel()) {
-            return { data: null, error: new Error("Cancelled during cross-reference fetch") };
-        }
-        if (onProgress) onProgress({ page, totalFetched: allCrossrefs.length });
+    while (hasMore) {
+        if (onCancel && onCancel()) return { data: null, error: new Error("Cancelled") };
+        if (onProgress) onProgress({ page: page + 1, totalFetched: allCrossrefs.length });
+
+        const { data, error } = await _invokeBrain('fetch_cross_refs', { page });
         
-        try {
-            const { data, error } = await supabaseClient
-                .from('cross_references')
-                .select('doc_id, related_refs')
-                .order('doc_id', { ascending: true })
-                .range(offset, offset + pageSize - 1);
+        if (error) return { data: null, error };
 
-            if (error && error.code !== 'PGRST116') throw error;
-            if (!data || data.length === 0) {
-                finished = true;
-            } else {
-                allCrossrefs.push(...data);
-                if (data.length < pageSize) {
-                    finished = true;
-                } else {
-                    offset += pageSize;
-                    page++;
-                }
-            }
-        } catch (error) {
-            console.error(`API Error fetching cross-references (offset: ${offset}):`, error);
-            return { data: null, error };
-        }
+        if (data.crossrefs) allCrossrefs.push(...data.crossrefs);
+        hasMore = data.hasMore;
+        page++;
     }
     return { data: allCrossrefs, error: null };
 }
@@ -348,13 +246,7 @@ export async function fetchAllCrossRefs({ onCancel, onProgress }) {
  * @returns {Promise<object>} A promise resolving to { data, error }.
  */
 export async function searchVerses({ language, keyword }) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    return supabaseClient.rpc("search_verses", {
-        language_code: language,
-        keyword_term: keyword,
-        limit_count: 50,
-        offset_count: 0,
-    });
+    return _invokeBrain('search', { language, keyword });
 }
 
 /**
