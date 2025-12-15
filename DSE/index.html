@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divine Scripture Explorer</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4A90E2">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;600&family=Roboto:wght@300;400&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Desktop/Tablet View Tabs -->
+        <div class="view-tabs-container">
+             <div class="view-tabs" id="mainViewTabs" role="tablist" aria-label="Main views">
+                 <button id="tab-themeView" role="tab" aria-controls="themeView" aria-selected="true" data-view="themeView">Themes</button>
+                 <button id="tab-bookListView" role="tab" aria-controls="bookListView" aria-selected="false" data-view="bookListView">Books</button>
+                 <button id="tab-notesView" role="tab" aria-controls="notesView" aria-selected="false" data-view="notesView"><span class="icon" aria-hidden="true">📝</span> Notes</button>
+                 <button id="tab-settingsView" role="tab" aria-controls="settingsView" aria-selected="false" data-view="settingsView">Settings</button>
+             </div>
+        </div>
+
+        <main id="main-app-content" class="main-app-content" role="main">
+
+            <!-- Theme View -->
+            <div id="themeView" class="tab-panel active" role="tabpanel" aria-labelledby="tab-themeView">
+                <h2 class="visually-hidden">Themes</h2>
+
+                <!-- Verse Card -->
+                <div class="verse-card" id="verseCard">
+                    <div class="verse-card-content">
+                        <div class="verse-title" id="verseCardTitle">Today's Scripture</div>
+                        <div class="verse-text" id="verseCardText"></div>
+                        <div class="verse-reference" id="verseCardReference"></div>
+                    </div>
+                    <!-- Modern Integrated Actions -->
+                    <div class="verse-card-actions">
+                        <button id="shareBtn" class="action-icon-btn" aria-label="Share Verse" title="Share">
+                            <i class="fas fa-share-nodes"></i>
+                        </button>
+                        <button id="copyBtn" class="action-icon-btn" aria-label="Copy Text" title="Copy">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button id="saveBtn" class="action-icon-btn" aria-label="Save to Favourites" title="Save">
+                            <i class="far fa-bookmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="theme-cards-container">
+                    <!-- Recent Theme Card -->
+                    <div class="theme-card recent-theme-card" tabindex="0" data-theme-name="Recent">
+                        <div class="theme-card-header">
+                            <h2>Recent Books</h2>
+                            <div class="subtitle">Jump back in</div>
+                            <div class="scripture-icon" aria-hidden="true">⏳</div>
+                        </div>
+                        <div class="theme-card-content" role="region" aria-label="Recently read books">
+                            <div class="books-container" id="recentBooksContainer">
+                                <p class="loading-books"><span class="loading-dots">Loading recent books...</span></p>
+                                <p class="empty-list-message recent-empty-message" style="display: none;">No recent books yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Other Theme Cards -->
+                    <div class="theme-card" tabindex="0" data-theme-name="Creation & Origins"><div class="theme-card-header"><h2>Creation & Origins</h2><div class="subtitle">God Starts the Story</div><div class="scripture-icon" aria-hidden="true">🌌</div></div><div class="theme-card-content" role="region"><p class="intro-text">Where it all began...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                    <div class="theme-card" tabindex="0" data-theme-name="Law & Covenant"><div class="theme-card-header"><h2>Law & Covenant</h2><div class="subtitle">God Defines the Relationship</div><div class="scripture-icon" aria-hidden="true">⚖️</div></div><div class="theme-card-content" role="region"><p class="intro-text">The blueprint for holiness...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                    <div class="theme-card" tabindex="0" data-theme-name="Kingship & Nationhood"><div class="theme-card-header"><h2>Kingship & Nationhood</h2><div class="subtitle">God Builds a People</div><div class="scripture-icon" aria-hidden="true">👑</div></div><div class="theme-card-content" role="region"><p class="intro-text">The rise and fall of Israel...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                    <div class="theme-card" tabindex="0" data-theme-name="Wisdom & Daily Life"><div class="theme-card-header"><h2>Wisdom & Daily Life</h2><div class="subtitle">God Speaks to the Human Condition</div><div class="scripture-icon" aria-hidden="true">🧶</div></div><div class="theme-card-content" role="region"><p class="intro-text">Poetry, questions, hard truths...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                    <div class="theme-card" tabindex="0" data-theme-name="Prophetic Warnings"><div class="theme-card-header"><h2>Prophetic Warnings</h2><div class="subtitle">God Calls for Repentance</div><div class="scripture-icon" aria-hidden="true">🔥</div></div><div class="theme-card-content" role="region"><p class="intro-text">Voices in the wilderness...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                    <div class="theme-card" tabindex="0" data-theme-name="Messianic Fulfillment"><div class="theme-card-header"><h2>Messianic Fulfillment</h2><div class="subtitle">God Steps In Himself</div><div class="scripture-icon" aria-hidden="true">✝️</div></div><div class="theme-card-content" role="region"><p class="intro-text">Jesus Christ shows up...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                    <div class="theme-card" tabindex="0" data-theme-name="Church Formation"><div class="theme-card-header"><h2>Church Formation</h2><div class="subtitle">God Raises a Movement</div><div class="scripture-icon" aria-hidden="true">🏛️</div></div><div class="theme-card-content" role="region"><p class="intro-text">The apostles act...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                    <div class="theme-card" tabindex="0" data-theme-name="Apocalyptic Vision"><div class="theme-card-header"><h2>Apocalyptic Vision</h2><div class="subtitle">God Lifts the Veil</div><div class="scripture-icon" aria-hidden="true">👁️‍🗨️</div></div><div class="theme-card-content" role="region"><p class="intro-text">Heaven's visions, end-time prophecies...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                    <div class="theme-card" tabindex="0" data-theme-name="Faithful Witness & Resistance"><div class="theme-card-header"><h2>Faithful Witness & Resistance</h2><div class="subtitle">God's People Under Fire</div><div class="scripture-icon" aria-hidden="true">🛡️</div></div><div class="theme-card-content" role="region"><p class="intro-text">Stories of courage, faith...</p><div class="books-container"><p class="loading-books">Loading books...</p></div></div></div>
+                </div>
+            </div>
+
+            <!-- Book List View -->
+            <div id="bookListView" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-bookListView">
+                <h2 class="visually-hidden">Book List and Search</h2>
+                <div id="bookListSearchContainer" class="book-list-search modern-search-wrapper">
+                    <div class="search-inner">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="search" id="bookListSearchInput" placeholder="Search scripture..." aria-label="Search Reference or Keyword">
+                        <button id="bookListClearSearchButton" class="clear-btn hidden" aria-label="Clear search"><i class="fas fa-times"></i></button>
+                    </div>
+                    <button id="bookListSearchButton" class="button-primary hidden" aria-label="Search">Go</button>
+                </div>
+                <div id="bookListNoResults" class="no-results-message" style="display: none;" aria-live="polite"></div>
+                <div id="bookListSearchResultsContainer" style="display: none;" aria-live="polite"></div>
+
+                <div id="bookListStandardContent">
+                     <div class="content-tabs" id="bookListTabsContainer" role="tablist" aria-label="Filter books by testament">
+                         <button id="tab-bookListTabOT" role="tab" aria-controls="bookListTabOT" aria-selected="true" data-tab="bookListTabOT">Old Testament</button>
+                         <button id="tab-bookListTabAP" role="tab" aria-controls="bookListTabAP" aria-selected="false" data-tab="bookListTabAP">Apocrypha / EOTC</button>
+                         <button id="tab-bookListTabNT" role="tab" aria-controls="bookListTabNT" aria-selected="false" data-tab="bookListTabNT">New Testament</button>
+                          <button id="tab-bookListTabOTHER" role="tab" aria-controls="bookListTabOTHER" aria-selected="false" data-tab="bookListTabOTHER" style="display: none;">Other</button>
+                     </div>
+                     <div class="tab-content">
+                         <div id="bookListTabOT" class="tab-panel active" role="tabpanel" aria-labelledby="tab-bookListTabOT"><h2 class="testament-header">Old Testament</h2><ul class="book-list" id="bookListOT" aria-label="Old Testament Books"></ul></div>
+                         <div id="bookListTabAP" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-bookListTabAP"><h2 class="testament-header">Apocrypha / EOTC</h2><ul class="book-list" id="bookListAP" aria-label="Apocryphal and EOTC Books"></ul></div>
+                         <div id="bookListTabNT" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-bookListTabNT"><h2 class="testament-header">New Testament</h2><ul class="book-list" id="bookListNT" aria-label="New Testament Books"></ul></div>
+                         <div id="bookListTabOTHER" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-bookListTabOTHER"><h2 class="testament-header">Other Books</h2><ul class="book-list" id="bookListOTHER" aria-label="Other Books"></ul></div>
+                     </div>
+                </div>
+            </div>
+
+            <!-- Notes View -->
+            <div id="notesView" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-notesView">
+                <h2 class="visually-hidden">Notes and Favourites</h2>
+                <div class="content-tabs" id="notesViewTabs" role="tablist" aria-label="Notes sections">
+                    <button id="tab-userNotesPanel" role="tab" aria-controls="userNotesPanel" aria-selected="true">My Notes</button>
+                    <button id="tab-userFavouritesPanel" role="tab" aria-controls="userFavouritesPanel" aria-selected="false">Favourites</button>
+                    <button id="tab-userReflectionPanel" role="tab" aria-controls="userReflectionPanel" aria-selected="false">Reflection</button>
+                </div>
+
+                <div id="userNotesPanel" class="notes-view-panel active" role="tabpanel" aria-labelledby="tab-userNotesPanel">
+                    <h3 class="visually-hidden">My Notes List</h3>
+                    <ul id="notesListContainer" class="user-item-list">
+                        <li class="empty-list-message" style="display: none;">You have no saved notes yet.</li>
+                    </ul>
+                </div>
+
+                <div id="userFavouritesPanel" class="notes-view-panel hidden" role="tabpanel" aria-labelledby="tab-userFavouritesPanel">
+                    <h3 class="visually-hidden">Favourites List</h3>
+                    <ul id="favouritesListContainer" class="user-item-list">
+                         <li class="empty-list-message" style="display: none;">You have no saved favourites yet.</li>
+                    </ul>
+                </div>
+
+                 <div id="userReflectionPanel" class="notes-view-panel hidden" role="tabpanel" aria-labelledby="tab-userReflectionPanel">
+                    <h3 class="visually-hidden">My Reflection</h3>
+                    <div class="reflection-toolbar">
+                        <button id="addNewReflectionButton" class="button-primary">
+                            <span class="icon" aria-hidden="true">➕</span> Add New Reflection
+                        </button>
+                    </div>
+                    <div id="addReflectionForm" class="reflection-add-form">
+                        <h3 class="visually-hidden">Add New Reflection Form</h3>
+                        <textarea id="newReflectionTextarea" placeholder="Write your reflection here..."></textarea>
+                        <div class="form-buttons">
+                            <button id="saveNewReflectionButton" class="save-button button-primary">Save Reflection</button>
+                            <button id="cancelNewReflectionButton" class="cancel-button button-secondary">Cancel</button>
+                        </div>
+                    </div>
+                    <ul id="reflectionListContainer" class="user-item-list reflection-card-list">
+                         <li class="empty-list-message">No reflections saved yet.</li>
+                    </ul>
+                 </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settingsView" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-settingsView">
+                  <h2>Settings</h2>
+
+                  <!-- Appearance Section -->
+                  <div class="settings-section">
+                    <h3 class="settings-heading">Appearance</h3>
+                    <div class="setting-item">
+                         <div>
+                              <label for="darkModeSelect" class="setting-label">Theme</label>
+                              <span class="setting-description">Light, dark, or system default.</span>
+                         </div>
+                         <div class="setting-control">
+                              <select id="darkModeSelect">
+                                   <option value="light">Light</option>
+                                   <option value="dark">Dark</option>
+                                   <option value="system">System</option>
+                              </select>
+                         </div>
+                    </div>
+                    <div class="setting-item">
+                         <div>
+                              <label for="fontSizeSlider" class="setting-label">Reading Font Size</label>
+                              <span class="setting-description">Adjust the size of text in the reading view.</span>
+                         </div>
+                         <div class="setting-control range-control">
+                              <input type="range" id="fontSizeSlider" min="0.8" max="2.0" step="0.1" value="1.1">
+                              <span id="fontSizeValue" aria-live="polite">1.1em</span>
+                         </div>
+                    </div>
+                    <div class="setting-item">
+                         <div>
+                              <label for="fontFamilySelect" class="setting-label">Reading Font Family</label>
+                              <span class="setting-description">Choose a font style for the reading view.</span>
+                         </div>
+                         <div class="setting-control">
+                              <select id="fontFamilySelect">
+                                   <option value="'EB Garamond', serif">EB Garamond (Classic)</option>
+                                   <option value="'Inter', sans-serif">Inter (Modern)</option>
+                                   <option value="'Times New Roman', serif">Times New Roman</option>
+                                   <option value="Georgia, serif">Georgia</option>
+                                   <option value="'Noto Serif', serif">Noto Serif</option>
+                              </select>
+                         </div>
+                    </div>
+                    <div class="setting-item">
+                         <div>
+                              <label for="browseViewModeSelect" class="setting-label">Primary Book Browser</label>
+                              <span class="setting-description">Choose your default view for finding books.</span>
+                         </div>
+                         <div class="setting-control">
+                              <select id="browseViewModeSelect">
+                                   <option value="theme">Theme View</option>
+                                   <option value="list">List View</option>
+                              </select>
+                         </div>
+                    </div>
+                    <div class="setting-item">
+                         <div>
+                              <label for="languageSelect" class="setting-label">App Display Language</label>
+                              <span class="setting-description">Select the language for the application interface and book names.</span>
+                         </div>
+                         <div class="setting-control">
+                              <select id="languageSelect">
+                                   <option value="am">Amharic (አማርኛ)</option>
+                                   <option value="en">English</option>
+                              </select>
+                         </div>
+                    </div>
+                    <div class="setting-item">
+                        <div>
+                            <label for="autoHideDelaySelect" class="setting-label">UI Auto-Hide Delay</label>
+                            <span class="setting-description">Time (in ms) before reading UI auto-hides on scroll/inactivity.</span>
+                        </div>
+                        <div class="setting-control">
+                             <select id="autoHideDelaySelect">
+                                <option value="1000">1000 ms</option>
+                                <option value="2000">2000 ms</option>
+                                <option value="3000">3000 ms (Default)</option>
+                                <option value="5000">5000 ms</option>
+                                <option value="10000">10000 ms</option>
+                                <option value="99999999">Never</option>
+                             </select>
+                        </div>
+                    </div>
+                     <div class="setting-item">
+                        <div>
+                             <span class="setting-label">Keep Screen Awake</span>
+                             <span class="setting-description">Prevents screen from dimming or locking while reading. Requires browser support.</span>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="keepAwakeToggle">
+                                <span class="toggle-slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                  </div>
+
+                <!-- Offline Content Section (UPDATED) -->
+                <div class="settings-section">
+                    <h3 class="settings-heading">Offline Content</h3>
+                    <p class="section-description">Manage your downloaded resources for offline access.</p>
+
+                    <div class="setting-item">
+                        <div>
+                            <span class="setting-label">Manage Downloads</span>
+                            <span class="setting-description">Select specific Bibles, Commentaries, or Cross-References to download.</span>
+                        </div>
+                        <div class="setting-control">
+                            <!-- Triggers the Modal -->
+                            <button id="startDownloadButton" class="button-primary">Manage</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div>
+                            <span class="setting-label">Clear Temporary Cache</span>
+                            <span class="setting-description">Removes temporary data (not fully downloaded resources).</span>
+                        </div>
+                        <div class="setting-control">
+                            <button id="clearChapterCacheButton" class="button-secondary">Clear Temp</button>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Data Management Section -->
+                 <div class="settings-section">
+                     <h3 class="settings-heading">Data Management</h3>
+                     <div class="setting-item setting-item-trigger" id="dataManagementTrigger" role="button" tabindex="0" aria-expanded="false">
+                         <div>
+                             <span class="setting-label">Manage Your Personal Data</span>
+                             <span class="setting-description">Export, Import, or Clear your Notes, Favourites, Reflections, History, and general Settings.</span>
+                         </div>
+                         <div class="setting-control">
+                             <span class="trigger-icon" aria-hidden="true">▼</span>
+                         </div>
+                     </div>
+
+                     <div id="dataManagementOptions" class="settings-options-container hidden" aria-hidden="true">
+                         <div class="setting-item">
+                             <div>
+                                 <span class="setting-label">Export User Data</span>
+                                 <span class="setting-description">Download a backup of your notes, favourites, reflections, search history, recent books, and settings.</span>
+                             </div>
+                             <div class="setting-control">
+                                 <button id="exportUserDataButton" class="button-secondary">Export</button>
+                             </div>
+                         </div>
+                         <div class="setting-item">
+                             <div>
+                                 <span class="setting-label">Import User Data</span>
+                                 <span class="setting-description">Load notes, favourites, reflections, history, and settings from a previously exported JSON file.</span>
+                             </div>
+                             <div class="setting-control">
+                                 <input type="file" id="importUserDataFile" accept=".json" class="visually-hidden">
+                                 <label for="importUserDataFile" id="importUserDataButton" class="button-secondary">Import File</label>
+                             </div>
+                         </div>
+                         <div class="setting-item">
+                             <div>
+                                 <span class="setting-label">Clear All Personal Data</span>
+                                 <span class="setting-description">Permanently delete ALL your saved notes, favourites, reflections, search history, and recent books list.</span>
+                             </div>
+                             <div class="setting-control">
+                                 <button id="clearAllUserDataButton" class="button-secondary button-danger">Clear All Data</button>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+
+                 <!-- About & Info Section -->
+                 <div class="settings-section">
+                    <h3 class="settings-heading">About & Info</h3>
+                    <div class="setting-item">
+                         <div><span class="setting-label">About This App</span><span class="setting-description" id="appVersion">Version 2.0.0</span></div>
+                         <div class="setting-control"><button class="link-button" id="aboutAppButton" aria-describedby="appVersion">View Details</button></div>
+                    </div>
+                    <div class="setting-item"><div><span class="setting-label">Canon Information</span><span class="setting-description">Details about the books included in this application.</span></div><div class="setting-control"><button class="link-button" id="canonInfoButton">View Info</button></div></div>
+                 </div>
+
+            </div> <!-- /#settingsView -->
+
+        </main>
+
+        <!-- Verse Card Dropdown Menu -->
+         <!-- Old Dropdown Removed -->
+
+        <!-- Reading View Overlay -->
+        <div class="reading-view" id="readingView" aria-modal="true" aria-hidden="true" role="dialog" aria-labelledby="readingViewLabel">
+             <div class="reading-container">
+                 <div class="reading-header">
+                    <h2 id="readingViewLabel"></h2>
+                    <div id="crossRefBackButtonContainer" style="position: absolute; top: 5px; left: 45px; z-index: 1;"></div>
+                    <div class="reading-controls">
+                        <button id="closeReadingViewButton" aria-label="Close reading view"><span class="icon" aria-hidden="true">←</span> <span class="visually-hidden">Back</span></button>
+                        <button id="readingQuickLanguageButton" aria-label="Switch language">AM/EN</button>
+                        <button id="readingQuickCommentaryButton" aria-label="Switch to Commentary View">📝</button>
+                        <button id="audioModalTriggerButton" aria-label="Open Audio Player">
+                            <span class="icon">🎧</span>
+                            <span class="visually-hidden">Audio Player</span>
+                        </button>
+                        <button id="readingQuickThemeButton" aria-label="Toggle theme"><span class="icon" id="readingQuickThemeIcon" aria-hidden="true">🌙</span> <span class="visually-hidden">Toggle Theme</span></button>
+                    </div>
+                </div>
+
+                <div class="chapter-nav-container">
+                     <div class="reading-progress-bar-container" aria-hidden="true"><div class="reading-progress-bar" id="readingProgressBar"></div></div>
+                    <nav class="chapter-nav" id="chapterNav" aria-label="Chapters"></nav>
+                </div>
+
+                <div id="chapterIntroductionContainer" class="chapter-intro-header demo-style-2" style="display: none;">
+                    <p id="chapterIntroText"></p>
+                </div>
+
+                <div class="reading-content" id="readingContent" tabindex="-1" aria-live="polite"></div>
+                 <div class="reading-footer">
+                     <nav aria-label="Chapter navigation">
+                        <button class="nav-btn" id="prevChapter" disabled>Previous Chapter</button>
+                        <button class="nav-btn" id="nextChapter" disabled>Next Chapter</button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation (Mobile Only) -->
+         <nav class="bottom-nav" id="bottomNavTabs" role="navigation" aria-label="Main navigation">
+             <div role="tablist">
+                 <button role="tab" aria-controls="themeView" aria-selected="true" data-view="themeView">
+                    <i class="fas fa-layer-group icon"></i>
+                    <span>Themes</span>
+                 </button>
+                 <button role="tab" aria-controls="bookListView" aria-selected="false" data-view="bookListView">
+                    <i class="fas fa-book-bible icon"></i>
+                    <span>Books</span>
+                 </button>
+                 <button role="tab" aria-controls="notesView" aria-selected="false" data-view="notesView">
+                    <i class="fas fa-pen-nib icon"></i>
+                    <span>Journal</span>
+                 </button>
+                 <button role="tab" aria-controls="settingsView" aria-selected="false" data-view="settingsView">
+                    <i class="fas fa-sliders-h icon"></i>
+                    <span>Settings</span>
+                 </button>
+             </div>
+        </nav>
+
+        <!-- Fullscreen Verse Overlay -->
+        <div class="fullscreen-verse" id="fullscreenVerse" aria-modal="true" aria-hidden="true" role="dialog" aria-label="Verse of the Day Fullscreen View">
+            <div class="fullscreen-content">
+                <button class="close-btn" id="fullscreenCloseBtn" aria-label="Close fullscreen view">×</button>
+                <div class="verse-title" id="fullscreenVerseTitle"></div>
+                <div class="verse-text" id="fullscreenVerseText"></div>
+                <div class="verse-reference" id="fullscreenVerseReference"></div>
+            </div>
+        </div>
+
+        <!-- Verse Action Bar -->
+        <div class="action-bar-container hidden" id="actionBarContainer" aria-hidden="true">
+            <div class="action-buttons-container">
+                <button id="actionBarDoneBtn" class="button-secondary">Done</button>
+                <button id="copyVerseBtn"><i class="fas fa-copy"></i><span>Copy</span></button>
+                <button id="saveVerseBtn"><i class="fas fa-bookmark"></i><span>Save</span></button>
+                <button id="noteVerseBtn"><i class="fas fa-pencil-alt"></i><span>Note</span></button>
+                <button id="shareVerseBtn"><i class="fas fa-share-alt"></i><span>Share</span></button>
+                <button id="imageVerseBtn"><i class="fas fa-image"></i><span>Image</span></button>
+                <button id="commentaryVerseBtn"><i class="fas fa-comments"></i><span>Commentary</span></button>
+            </div>
+        </div>
+
+        <!-- Download Manager Modal (Single Instance) -->
+        <div id="downloadModal" class="modal-overlay hidden" aria-hidden="true">
+            <div class="modal-content download-modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Manage Offline Resources</h3>
+                    <button id="closeDownloadModalBtn" class="close-button" aria-label="Close">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-description">Select resources to download. Green indicates content is available offline.</p>
+                    
+                    <div class="download-options-container">
+                        <!-- Amharic Resources -->
+                        <fieldset class="download-language-group">
+                            <legend>Amharic (አማርኛ)</legend>
+                            <label class="download-option-item" data-package-id="am-bible">
+                                <div class="option-details">
+                                    <span class="option-title">Bible (Scripture)</span>
+                                    <span class="option-status" data-status="checking">Checking...</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider round"></span>
+                                </div>
+                            </label>
+                            <label class="download-option-item" data-package-id="am-commentary">
+                                <div class="option-details">
+                                    <span class="option-title">Commentary</span>
+                                    <span class="option-status" data-status="checking">Checking...</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider round"></span>
+                                </div>
+                            </label>
+                            <label class="download-option-item" data-package-id="am-ref">
+                                <div class="option-details">
+                                    <span class="option-title">Cross-References</span>
+                                    <span class="option-status" data-status="checking">Checking...</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider round"></span>
+                                </div>
+                            </label>
+                        </fieldset>
+
+                        <!-- English Resources -->
+                        <fieldset class="download-language-group">
+                            <legend>English</legend>
+                            <label class="download-option-item" data-package-id="en-bible">
+                                <div class="option-details">
+                                    <span class="option-title">Bible (Scripture)</span>
+                                    <span class="option-status" data-status="checking">Checking...</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider round"></span>
+                                </div>
+                            </label>
+                            <label class="download-option-item" data-package-id="en-commentary">
+                                <div class="option-details">
+                                    <span class="option-title">Commentary</span>
+                                    <span class="option-status" data-status="checking">Checking...</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider round"></span>
+                                </div>
+                            </label>
+                            <label class="download-option-item" data-package-id="en-ref">
+                                <div class="option-details">
+                                    <span class="option-title">Cross-References</span>
+                                    <span class="option-status" data-status="checking">Checking...</span>
+                                </div>
+                                <div class="toggle-switch">
+                                    <input type="checkbox">
+                                    <span class="toggle-slider round"></span>
+                                </div>
+                            </label>
+                        </fieldset>
+                    </div>
+
+                    <!-- Modal Progress Bar -->
+                    <div id="downloadModalProgressContainer" class="download-progress-container" style="display: none;">
+                        <p id="downloadModalProgressMessage">Initializing...</p>
+                        <progress id="downloadModalProgressBar" value="0" max="100"></progress>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="startSelectedDownloadsBtn" class="button-primary">Start Download</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Player Modal -->
+        <div id="audioPlayerModal" class="modal-overlay hidden" aria-hidden="true">
+            <div class="modal-content">
+                <div id="audioModalHeaderRef" class="audio-player-header"></div>
+                <div class="audio-player">
+                  <audio id="audio" src=""></audio>
+                  <div class="progress-container">
+                    <input type="range" id="progressBar" value="0" min="0" max="100" step="0.1">
+                    <div class="time">
+                      <span id="currentTime">0:00</span>
+                      <span id="duration">0:00</span>
+                    </div>
+                  </div>
+                  <div class="controls">
+                    <button id="backwardBtn" aria-label="Skip backward 10 seconds">⏪ 10s</button>
+                    <button id="playPauseBtn" aria-label="Play/Pause Audio">▶️</button>
+                    <button id="forwardBtn" aria-label="Skip forward 10 seconds">10s ⏩</button>
+                  </div>
+                   <button class="close-button" aria-label="Close Audio Player">×</button>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- End .app-container -->
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.1/dist/umd/supabase.min.js"></script>
+    <script type="module" src="app.js"></script>
+    
+    <!-- Eruda Console (Development only - Remove in Production) -->
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+
+    <!-- Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed'));
+            });
+        }
+    </script>
+</body>
+</html>
