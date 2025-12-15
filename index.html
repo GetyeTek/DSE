@@ -41,12 +41,23 @@
 
                 <!-- Verse Card -->
                 <div class="verse-card" id="verseCard">
-                    <div class="menu-wrapper">
-                        <div class="menu-dots" id="menuDots" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Verse options">⋮</div>
+                    <div class="verse-card-content">
+                        <div class="verse-title" id="verseCardTitle">Today's Scripture</div>
+                        <div class="verse-text" id="verseCardText"></div>
+                        <div class="verse-reference" id="verseCardReference"></div>
                     </div>
-                    <div class="verse-title" id="verseCardTitle">Today's Scripture</div>
-                    <div class="verse-text" id="verseCardText"></div>
-                    <div class="verse-reference" id="verseCardReference"></div>
+                    <!-- Modern Integrated Actions -->
+                    <div class="verse-card-actions">
+                        <button id="shareBtn" class="action-icon-btn" aria-label="Share Verse" title="Share">
+                            <i class="fas fa-share-nodes"></i>
+                        </button>
+                        <button id="copyBtn" class="action-icon-btn" aria-label="Copy Text" title="Copy">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button id="saveBtn" class="action-icon-btn" aria-label="Save to Favourites" title="Save">
+                            <i class="far fa-bookmark"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="theme-cards-container">
@@ -337,20 +348,7 @@
         </main>
 
         <!-- Verse Card Dropdown Menu -->
-         <div class="dropdown-menu" id="dropdownMenu" role="menu" aria-hidden="true">
-             <button class="menu-item" id="createImageBtn" role="menuitem">
-                 <i class="fas fa-image"></i> <span>Create Image (WIP)</span>
-             </button>
-             <button class="menu-item" id="shareBtn" role="menuitem">
-                 <i class="fas fa-share-alt"></i> <span>Share Verse</span>
-             </button>
-             <button class="menu-item" id="saveBtn" role="menuitem">
-                 <i class="fas fa-bookmark"></i> <span>Save as Favourite</span>
-             </button>
-              <button class="menu-item" id="copyBtn" role="menuitem">
-                  <i class="fas fa-copy"></i> <span>Copy Text</span>
-             </button>
-         </div>
+         <!-- Old Dropdown Removed -->
 
         <!-- Reading View Overlay -->
         <div class="reading-view" id="readingView" aria-modal="true" aria-hidden="true" role="dialog" aria-labelledby="readingViewLabel">
