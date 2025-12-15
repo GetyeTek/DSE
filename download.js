@@ -21,11 +21,11 @@ let _booksDownloadedInThisRun = [];
 // ===================================================================================
 
 /** Processes a single book: fetches all its verses and saves them to the cache. */
-async function _downloadAndProcessBook(bookInfo, language, overallSuccessTracker) {
+async function _downloadAndProcessBook(bookInfo, language, overallSuccessTracker, flags) {
     const { id: bookId, chapters: totalChaptersInBook, englishName, amharicName } = bookInfo;
     const bookDisplayName = language === 'en' ? englishName || bookId : amharicName || bookId;
 
-    // Update progress UI for the book being started
+    // Update progress UI
     currentState.downloadProgress.currentBookId = bookId;
     currentState.downloadProgress.currentBookName = bookDisplayName;
     currentState.downloadProgress.totalChaptersInBook = totalChaptersInBook;
@@ -34,19 +34,13 @@ async function _downloadAndProcessBook(bookInfo, language, overallSuccessTracker
 
     if (currentState.cancelDownloadFlag) return { status: 'cancelled' };
 
-    // Skip if this book is already marked as fully downloaded for this language
-    if ((currentState.downloadedBooksByLanguage[language] || []).includes(bookId)) {
-        currentState.downloadProgress.downloadedChaptersOverall += totalChaptersInBook;
-        _booksDownloadedInThisRun.push(bookId);
-        ui.throttledUpdateDownloadUI();
-        return { status: 'skipped', chapters: totalChaptersInBook };
-    }
-
-    // 1. Fetch all verses for the book from the API
-    const { data: allVersesForBook, error: fetchError } = await api.fetchAllVersesForBook({
+    // 1. Fetch data from API based on flags
+    const { data: fetchedData, error: fetchError } = await api.fetchAllVersesForBook({
         bookId: bookId,
         language: language,
-        onCancel: () => currentState.cancelDownloadFlag
+        onCancel: () => currentState.cancelDownloadFlag,
+        includeVerses: flags.includeVerses,
+        includeCommentary: flags.includeCommentary
     });
 
     if (currentState.cancelDownloadFlag) return { status: 'cancelled' };
@@ -55,37 +49,20 @@ async function _downloadAndProcessBook(bookInfo, language, overallSuccessTracker
         overallSuccessTracker.isSuccess = false;
         return { status: 'fetch_error' };
     }
-    if (!allVersesForBook || allVersesForBook.length === 0) {
-        console.warn(`Download Warning: No verse data returned for book ${bookId}.`);
-        return { status: 'no_data' };
-    }
 
-    // 2. Save all chapters for the book in a single batch transaction to the cache
-    const saveResult = await cache.saveBookChaptersInBatch(bookId, language, allVersesForBook);
+    // 2. Save using the merge-capable cache function
+    const saveResult = await cache.saveBookChaptersInBatch(bookId, language, fetchedData);
 
     if (currentState.cancelDownloadFlag) return { status: 'cancelled' };
     if (saveResult.error) {
         console.error(`Download Error: Failed to save book ${bookId} to cache.`, saveResult.error);
         overallSuccessTracker.isSuccess = false;
-        if (saveResult.error.name === 'QuotaExceededError') {
-            ui.showTempMessage("Download failed: Device storage is full.", 'error');
-            currentState.cancelDownloadFlag = true; // Stop all further downloads
-        }
         return { status: 'save_error' };
     }
 
-    // 3. Update progress and status
+    // 3. Update progress
     currentState.downloadProgress.downloadedChaptersOverall += saveResult.savedCount;
-    const lastChapterInBook = [...new Set(allVersesForBook.map(v => v.chapter_num))].pop();
-    currentState.downloadProgress.currentChapter = lastChapterInBook || 0;
-    
-    // Mark as successful for this run only if all expected chapters were saved
-    if (saveResult.savedCount >= totalChaptersInBook) {
-        _booksDownloadedInThisRun.push(bookId);
-    } else {
-        console.warn(`Book ${bookId} saved with ${saveResult.savedCount}/${totalChaptersInBook} chapters.`);
-        overallSuccessTracker.isSuccess = false; // Partial save is not a full success
-    }
+    currentState.downloadProgress.currentChapter = totalChaptersInBook;
     
     return { status: 'success' };
 }
@@ -133,119 +110,100 @@ async function _downloadAndProcessCrossRefs(language, overallSuccessTracker) {
 // ===================================================================================
 
 /** Starts the download process for the language selected in the UI. */
-export async function start() {
-    if (currentState.isDownloading) {
-        ui.showTempMessage("Download already in progress.", 'info');
-        return;
-    }
+export async function start(resourcesToDownload) {
+    // resourcesToDownload is array like ['am-bible', 'en-ref', 'am-commentary']
+    if (currentState.isDownloading) return;
     if (!_supabaseClient) {
         ui.showTempMessage("Cannot download: Database not connected.", 'error');
         return;
     }
-    if (Object.keys(currentState.booksInfo).length === 0) {
-        ui.showTempMessage("Cannot download: Book list not loaded.", 'error');
+    
+    if (!resourcesToDownload || resourcesToDownload.length === 0) {
+        ui.showTempMessage("No resources selected.", 'info');
         return;
     }
 
-    const language = currentState.downloadLanguage;
-    const langDisplayName = language === 'am' ? 'Amharic' : 'English';
-    if (!confirm(`Download the entire ${langDisplayName} Bible for offline use? This may use significant storage space.`)) {
-        return;
-    }
-    
-    // 1. Initialize State
     currentState.isDownloading = true;
     currentState.cancelDownloadFlag = false;
-    _booksDownloadedInThisRun = [];
     const overallSuccessTracker = { isSuccess: true };
 
-    const booksToDownload = Object.values(currentState.booksInfo)
-        .filter(book => book?.chapters > 0)
-        .sort((a, b) => a.order - b.order);
-
-    currentState.downloadProgress = {
-        language: language,
-        currentBookId: null,
-        currentBookName: "Preparing...",
-        currentChapter: 0,
-        totalChaptersInBook: 0,
-        totalChaptersOverall: booksToDownload.reduce((sum, book) => sum + book.chapters, 0),
-        downloadedChaptersOverall: 0,
+    // Parse request to determine what to do
+    const tasks = {
+        am: { bible: false, commentary: false, ref: false },
+        en: { bible: false, commentary: false, ref: false }
     };
-    ui.updateDownloadUI();
+
+    resourcesToDownload.forEach(id => {
+        const [lang, type] = id.split('-');
+        if (tasks[lang]) tasks[lang][type] = true;
+    });
+
+    const languagesToProcess = ['am', 'en'].filter(lang => tasks[lang].bible || tasks[lang].commentary || tasks[lang].ref);
 
     try {
-        // 2. Download Cross-References first
-        const crossrefsSuccess = await _downloadAndProcessCrossRefs(language, overallSuccessTracker);
-        
-        // 3. Download Books in parallel batches
-        const CONCURRENCY_LIMIT = 3;
-        currentState.downloadProgress.currentBookName = "Downloading books...";
-        ui.throttledUpdateDownloadUI();
-
-        for (let i = 0; i < booksToDownload.length; i += CONCURRENCY_LIMIT) {
+        for (const lang of languagesToProcess) {
             if (currentState.cancelDownloadFlag) break;
-            const batch = booksToDownload.slice(i, i + CONCURRENCY_LIMIT);
-            await Promise.all(
-                batch.map(book => _downloadAndProcessBook(book, language, overallSuccessTracker))
-            );
-        }
 
-        // 4. Finalize and Update State
-        const wasCancelled = currentState.cancelDownloadFlag;
-        
-        // Update the list of permanently downloaded books
-        if (!currentState.downloadedBooksByLanguage[language]) {
-            currentState.downloadedBooksByLanguage[language] = [];
-        }
-        _booksDownloadedInThisRun.forEach(bookId => {
-            if (!currentState.downloadedBooksByLanguage[language].includes(bookId)) {
-                currentState.downloadedBooksByLanguage[language].push(bookId);
+            const flags = tasks[lang];
+            
+            // --- 1. Cross References ---
+            if (flags.ref) {
+                currentState.downloadProgress = {
+                    language: lang, currentBookName: "Cross-References",
+                    currentChapter: 0, totalChaptersInBook: 0, totalChaptersOverall: 0, downloadedChaptersOverall: 0
+                };
+                ui.updateDownloadUI();
+                
+                const success = await _downloadAndProcessCrossRefs(lang, overallSuccessTracker);
+                if (success) {
+                    currentState.downloadedResources[`${lang}-ref`] = true;
+                    localStorage.setItem('downloadedResources', JSON.stringify(currentState.downloadedResources));
+                }
             }
-        });
 
-        // Check if the entire language is now complete
-        const allBooksDownloaded = booksToDownload.every(book => currentState.downloadedBooksByLanguage[language].includes(book.id));
-        const isLangComplete = allBooksDownloaded && crossrefsSuccess;
+            // --- 2. Books (Bible & Commentary) ---
+            if (flags.bible || flags.commentary) {
+                 const booksToDownload = Object.values(currentState.booksInfo)
+                    .filter(book => book?.chapters > 0)
+                    .sort((a, b) => a.order - b.order);
+                
+                currentState.downloadProgress = {
+                    language: lang, currentBookName: "Preparing Books...",
+                    currentChapter: 0, totalChaptersInBook: 0,
+                    totalChaptersOverall: booksToDownload.reduce((sum, book) => sum + book.chapters, 0),
+                    downloadedChaptersOverall: 0
+                };
+                ui.updateDownloadUI();
 
-        if (isLangComplete && !currentState.downloadedLanguages.includes(language)) {
-            currentState.downloadedLanguages.push(language);
-        } else if (!isLangComplete) {
-            currentState.downloadedLanguages = currentState.downloadedLanguages.filter(lang => lang !== language);
+                const CONCURRENCY_LIMIT = 3;
+                for (let i = 0; i < booksToDownload.length; i += CONCURRENCY_LIMIT) {
+                    if (currentState.cancelDownloadFlag) break;
+                    const batch = booksToDownload.slice(i, i + CONCURRENCY_LIMIT);
+                    await Promise.all(batch.map(book => 
+                        _downloadAndProcessBook(book, lang, overallSuccessTracker, {
+                            includeVerses: flags.bible,
+                            includeCommentary: flags.commentary
+                        })
+                    ));
+                }
+                
+                if (!currentState.cancelDownloadFlag && overallSuccessTracker.isSuccess) {
+                    if (flags.bible) currentState.downloadedResources[`${lang}-bible`] = true;
+                    if (flags.commentary) currentState.downloadedResources[`${lang}-commentary`] = true;
+                    localStorage.setItem('downloadedResources', JSON.stringify(currentState.downloadedResources));
+                }
+            }
         }
-        
-        // Persist download status to localStorage
-        localStorage.setItem('downloadedBooksByLanguage', JSON.stringify(currentState.downloadedBooksByLanguage));
-        localStorage.setItem('downloadedLanguages', JSON.stringify(currentState.downloadedLanguages));
 
-        // Invalidate in-memory cross-ref map so it gets rebuilt from cache on next use
-        currentState.globalCrossRefsMapByLang[language] = null;
-        
-        // Final UI Message
-        const finalChaptersCount = await cache.countDownloadedChaptersForLanguage(language);
-        let finalMessage;
-        if (wasCancelled) {
-            finalMessage = `Download cancelled. ${finalChaptersCount} chapters saved.`;
-            ui.showTempMessage(finalMessage, 'info');
-        } else if (overallSuccessTracker.isSuccess && isLangComplete) {
-            finalMessage = `Download complete for ${langDisplayName}!`;
-            ui.showTempMessage(finalMessage, 'success');
-        } else {
-            finalMessage = `Download finished with some issues. Check console for details.`;
-            ui.showTempMessage(finalMessage, 'warning');
-        }
-        if (ui.settings.downloadStatusMessage) {
-            ui.settings.downloadStatusMessage.textContent = finalMessage;
-        }
+        ui.showTempMessage("Download process finished.", overallSuccessTracker.isSuccess ? 'success' : 'warning');
 
     } catch (error) {
-        console.error("A critical error occurred during the download process:", error);
-        ui.showTempMessage("Download failed due to a critical error.", "error");
-        overallSuccessTracker.isSuccess = false;
+        console.error("Critical download error:", error);
+        ui.showTempMessage("Download failed.", "error");
     } finally {
         currentState.isDownloading = false;
         currentState.cancelDownloadFlag = false;
-        ui.updateDownloadUI(); // Update UI to final state
+        ui.updateDownloadUI();
     }
 }
 
