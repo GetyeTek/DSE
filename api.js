@@ -109,16 +109,8 @@ export async function fetchVerseOfTheDayReference() {
  * @returns {Promise<object>} A promise resolving to { data, error }. Data is an array of verse objects.
  */
 export async function fetchVerseText({ bookId, chapter, startVerse, endVerse, language }) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
     const effectiveEndVerse = endVerse || startVerse;
-    return supabaseClient
-        .from(`verses_${language}`)
-        .select("verse_num, verse_text")
-        .eq("book_id", bookId)
-        .eq("chapter_num", chapter)
-        .gte("verse_num", startVerse)
-        .lte("verse_num", effectiveEndVerse)
-        .order("verse_num", { ascending: true });
+    return _invokeBrain('fetch_verse_text', { bookId, chapter, startVerse, endVerse: effectiveEndVerse, language });
 }
 
 /**
@@ -189,12 +181,7 @@ export async function fetchAudioUrl({ bookId, chapter, language }) {
  * @returns {Promise<object>} A promise resolving to { data, error }. Data is an array of objects with `doc_id`.
  */
 export async function fetchChapterCrossRefIds({ bookId, chapter }) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    const pattern = `${bookId}-${chapter}-%`;
-    return supabaseClient
-        .from('cross_references')
-        .select('doc_id')
-        .like('doc_id', pattern);
+    return _invokeBrain('fetch_chapter_refs', { bookId, chapter });
 }
 
 /**
@@ -203,12 +190,7 @@ export async function fetchChapterCrossRefIds({ bookId, chapter }) {
  * @returns {Promise<object>} A promise resolving to { data, error }. Data contains `related_refs`.
  */
 export async function fetchCrossRefDetails(docId) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    return supabaseClient
-        .from('cross_references')
-        .select('related_refs')
-        .eq('doc_id', docId)
-        .single();
+    return _invokeBrain('fetch_ref_details', { docId });
 }
 
 /**
@@ -269,10 +251,5 @@ export async function fetchBookDetails(bookId) {
  * @returns {Promise<object>} A promise resolving to { data, error }.
  */
 export async function fetchAppSetting(settingName) {
-    if (!supabaseClient) return { data: null, error: new Error("Supabase client not initialized.") };
-    return supabaseClient
-        .from('app_settings')
-        .select('name, value')
-        .eq('name', settingName)
-        .single();
+    return _invokeBrain('fetch_setting', { settingName });
 }
