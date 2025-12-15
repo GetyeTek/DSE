@@ -3,8 +3,68 @@
 
 /* --- :root Variables (Light Theme Defaults) --- */
 :root {
-    /* --- Colors --- */
-    --sacred-gold: #D4AF37;
+    /* --- 🎨 Modern Sacred Palette --- */
+    --sacred-gold: #c5a027;
+    --sacred-gold-subtle: rgba(197, 160, 39, 0.15);
+    --royal-purple: #4a3b75;
+    --deep-charcoal: #1f2937;
+    --soft-paper: #f9f8f4;
+    --pure-white: #ffffff;
+    --divider: #e5e7eb;
+
+    /* Interaction */
+    --primary-accent: var(--sacred-gold);
+    --touch-highlight: rgba(0, 0, 0, 0.05);
+    
+    /* Testament Colors */
+    --testament-old: #5b4e75; 
+    --testament-new: #b08d24; 
+    --apocrypha: #8d5b45;
+
+    /* --- 📐 Layout & Spacing --- */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-pill: 50px;
+    
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+
+    /* --- 🔡 Fonts --- */
+    --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-reading: 'EB Garamond', serif;
+
+    /* --- Dynamic Colors (Light Mode Default) --- */
+    --bg-main: var(--soft-paper);
+    --bg-card: var(--pure-white);
+    --bg-nav: rgba(249, 248, 244, 0.9); /* Translucent */
+    --text-main: #2d2d2d;
+    --text-muted: #6b7280;
+    --border-main: var(--divider);
+    --border-accent: var(--sacred-gold);
+    
+    /* Spacing tokens */
+    --space-xs: 4px; --space-sm: 10px; --space-md: 18px; --space-lg: 28px; --space-xl: 40px;
+    
+    /* Transitions */
+    --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    --transition-fast: 0.2s ease;
+}
+
+/* --- 🌙 Dark Mode Overrides --- */
+body.dark-mode {
+    --bg-main: #111111;
+    --bg-card: #1e1e1e;
+    --bg-nav: rgba(20, 20, 20, 0.9);
+    --text-main: #e5e5e5;
+    --text-muted: #a3a3a3;
+    --border-main: #333;
+    --glass-bg: rgba(30, 30, 30, 0.85);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.05);
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
     --royal-purple: #5D3FD3;
     --prophet-blue: #1E3F66;
     --wisdom-silver: #C0C0C0;
@@ -188,7 +248,20 @@ body.dark-mode {
 /* --- Base & Layout --- */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; font-size: 16px; }
-body { font-family: var(--font-ui); background: var(--bg-main); color: var(--text-main); min-height: 100vh; line-height: 1.6; transition: background var(--transition-med), color var(--transition-med); display: flex; flex-direction: column; }
+body {
+    font-family: var(--font-ui);
+    background: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    /* Remove tap highlight on mobile */
+    -webkit-tap-highlight-color: transparent;
+    /* Smoother font rendering */
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
 body.app-loading::after { content: 'Loading App...'; position: fixed; top: 45%; left: 50%; transform: translateX(-50%); font-size: 1.2rem; padding: var(--space-md) var(--space-lg); background: rgba(0, 0, 0, 0.7); color: white; border-radius: 8px; z-index: 1000; }
 .app-container { display: flex; flex-direction: column; min-height: 100vh; width: 100%; }
 /* REMOVED: .header styles */
@@ -288,7 +361,54 @@ body.dark-mode .view-tabs [role="tab"]:not([aria-selected="true"]):hover, body.d
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
 /* --- Bottom Navigation (Mobile) --- */
-.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--bg-nav); border-top: 1px solid var(--border-main); box-shadow: 0 -2px 10px var(--shadow-color); z-index: 60; }
+/* --- 📱 Floating Glass Navigation --- */
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 20px; /* Float above bottom */
+    left: 20px;
+    right: 20px;
+    height: 70px;
+    background: var(--bg-nav);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-float);
+    border: var(--glass-border);
+    z-index: 900;
+    padding: 0 10px;
+}
+
+.bottom-nav [role="tab"] {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.3s var(--ease-elastic);
+    opacity: 0.7;
+    border: none !important;
+}
+
+.bottom-nav [role="tab"].active {
+    color: var(--primary-accent);
+    opacity: 1;
+    transform: translateY(-4px);
+}
+
+.bottom-nav [role="tab"] .icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Adjust main content so it doesn't hide behind nav */
+@media (max-width: 767px) {
+    .main-app-content {
+        padding-bottom: 110px !important;
+    }
+}
 .bottom-nav[aria-hidden="false"] { display: flex; } /* Show based on aria-hidden */
 .bottom-nav [role="tablist"] { display: flex; justify-content: space-around; align-items: stretch; width: 100%; }
 .bottom-nav [role="tab"] { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--space-xs) 0; font-size: 0.75rem; line-height: 1.2; border-bottom-width: 0; border-top: 3px solid transparent; }
@@ -348,11 +468,60 @@ margin-top: 1.2
 
 
 /* Find this rule */
+/* --- 🎴 Modern Cards --- */
 .theme-card {
-    /* REMOVED: background: var(--bg-card); */ /* <-- This was removed previously */
-    border-radius: 12px;
-    box-shadow: 0 5px 15px var(--shadow-color);
-    /* MODIFIED: Add 'opacity' to the transition list */
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-main);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: var(--space-md);
+}
+
+.theme-card-header {
+    padding: var(--space-md) var(--space-lg);
+    background: transparent;
+    border-bottom: 1px solid var(--divider);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.theme-card-header h2 {
+    font-family: var(--font-reading);
+    font-size: 1.5rem;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.theme-card-header .subtitle {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.theme-card .scripture-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2.5rem;
+    opacity: 0.1;
+    color: var(--text-main);
+}
+
+/* Active State */
+.theme-card.active {
+    border-color: var(--sacred-gold);
+    box-shadow: var(--shadow-float);
+    transform: scale(1.01);
+    z-index: 10;
+}
     transition: box-shadow var(--transition-med), transform var(--transition-med), opacity var(--transition-fast); /* <-- Added opacity */
     border-top: 4px solid var(--border-accent);
     display: flex;
@@ -435,7 +604,33 @@ body.dark-mode .scripture-icon { opacity: 0.25; }
 /* The books container holds the grid, sits within the transparent content */
 .books-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: var(--space-sm); margin-top: var(--space-md); }
 /* Ensure book cards have solid backgrounds */
-.book-card { background: var(--bg-main); border-radius: 8px; padding: var(--space-sm); text-align: center; box-shadow: 0 2px 5px var(--shadow-color); transition: all var(--transition-fast); border: 1px solid var(--border-light); cursor: pointer; position: relative; overflow: hidden; z-index: 3; /* Ensure book cards are above content and background */ }
+.book-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    padding: var(--space-md) var(--space-sm);
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid var(--border-main);
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+.book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    border-color: var(--sacred-gold);
+}
+
+.book-card h3 {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
 body.dark-mode .book-card { background: #333; border-color: var(--border-main); }
 .book-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--border-accent); opacity: 0.6; transition: opacity var(--transition-fast), width var(--transition-fast); }
 .book-card:hover, .book-card:focus { transform: translateY(-3px); box-shadow: 0 4px 10px var(--shadow-color); border-color: var(--border-accent); }
@@ -1026,7 +1221,65 @@ body.dark-mode #dataManagementOptions {
 
 
 /* --- Reading View --- */
-.reading-view { display: none; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; width: 100vw; z-index: 100; overflow: hidden; background-color: var(--bg-nav); }
+/* --- 📖 Reading View Overlay --- */
+.reading-view {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 1000;
+    background-color: var(--bg-main);
+    /* Slide up animation */
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.reading-view[aria-hidden="false"] {
+    display: flex;
+    transform: translateY(0);
+}
+
+.reading-header {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-main);
+    border-bottom: 1px solid var(--border-main);
+    color: var(--text-main);
+    box-shadow: none;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    height: 60px;
+}
+
+.reading-header h2 {
+    text-align: center;
+    font-size: 1.1rem;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+/* Clean Minimal Buttons */
+.reading-controls button, #closeReadingViewButton {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    padding: 8px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reading-controls button:hover, #closeReadingViewButton:hover {
+    background: var(--sacred-gold-subtle);
+    color: var(--primary-accent);
+}
 .reading-view[aria-hidden="false"] { display: flex; }
 .reading-container { display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; }
 .reading-header, .chapter-nav-container, .reading-footer { flex-shrink: 0; transition: opacity var(--transition-med), transform var(--transition-med), height var(--transition-med), padding var(--transition-med), border var(--transition-med); background: var(--bg-nav); z-index: 110; }
@@ -1072,7 +1325,33 @@ body.dark-mode .chapter-nav-btn { background: var(--bg-card); color: var(--text-
 body.dark-mode .chapter-nav-btn:hover:not(.active), body.dark-mode .chapter-nav-btn:focus:not(.active) { background: #333; }
 .chapter-nav-btn.active { background: var(--border-accent); color: var(--text-on-accent); border-color: var(--border-accent); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.15); cursor: default; }
 body.dark-mode .chapter-nav-btn.active { color: var(--scripture-black); }
-.reading-content { flex: 1; padding: var(--space-lg) var(--space-md); overflow-y: auto; font-family: var(--font-reading); font-size: 1.1em; line-height: 1.7; background: var(--bg-reading); -webkit-overflow-scrolling: touch; position: relative; outline: none; }
+.reading-content {
+    flex: 1;
+    padding: 0 var(--space-md) 100px var(--space-md);
+    overflow-y: auto;
+    font-family: var(--font-reading);
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: var(--text-main);
+    background: var(--bg-main);
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.reading-content p {
+    margin-bottom: 1.2em;
+    text-align: justify;
+}
+
+.verse-number {
+    font-family: var(--font-ui);
+    color: var(--sacred-gold);
+    font-weight: bold;
+    font-size: 0.75em;
+    margin-right: 6px;
+    vertical-align: 2px;
+}
 .reading-content p { margin-bottom: 0.8em; }
 .reading-content p:last-child { margin-bottom: 0; }
 .verse-number { font-weight: bold; color: var(--text-muted); margin-right: 0.4em; font-size: 0.8em; vertical-align: super; user-select: none; -webkit-user-select: none; display: inline-block; }
@@ -2298,9 +2577,57 @@ body {
 
 
 /* Verse Card Container (within Theme View) */
+/* --- ✨ Verse of the Day Card --- */
 .verse-card {
-  background: #1e0b36; /* Dark Purple */
-  border: 1px solid #00ffaa; /* Bright Green */
+  background: linear-gradient(135deg, #2c2044, #4a3b75);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  color: white;
+  box-shadow: var(--shadow-float);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--space-xl);
+}
+
+.verse-card::after {
+    content: '”';
+    position: absolute;
+    bottom: -20px;
+    right: 20px;
+    font-family: serif;
+    font-size: 8rem;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.verse-title {
+    font-family: var(--font-ui);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.7);
+    border-bottom: none;
+    margin-bottom: var(--space-md);
+    text-align: left;
+}
+
+.verse-text {
+    font-family: var(--font-reading);
+    font-size: 1.4rem;
+    line-height: 1.5;
+    font-style: italic;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.verse-reference {
+    margin-top: var(--space-md);
+    text-align: right;
+    font-weight: 600;
+    color: var(--sacred-gold);
+    font-family: var(--font-ui);
+}
   border-radius: 8px;
   padding: 10px 20px;
   max-width: 100%; /* Allow it to take max width of its container */
