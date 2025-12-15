@@ -251,7 +251,7 @@ export async function clear() {
 export function init(dependencies) {
     _supabaseClient = dependencies.supabaseClient;
 
-    ui.settings.startDownloadButton?.addEventListener('click', start);
+    // ui.settings.startDownloadButton?.addEventListener('click', start); // Removed: Handled by downloadModal.js
     ui.settings.cancelDownloadButton?.addEventListener('click', cancel);
     ui.settings.clearDownloadedDataButton?.addEventListener('click', clear);
     ui.settings.downloadLanguageSelect?.addEventListener('change', (e) => {
