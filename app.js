@@ -17,6 +17,7 @@ import * as votd from './votd.js';
 import * as search from './search.js';
 import * as userdata from './userdata.js';
 import * as download from './download.js';
+import * as downloadModal from './downloadModal.js';
 import * as cref from './cref.js';
 import * as readingView from './readingView.js';
 import * as commentary from './commentary.js';
@@ -482,6 +483,7 @@ async function initializeApp() {
         download.init({
             supabaseClient: supabaseClient,
         });
+        downloadModal.init();
         cref.init({
             openReadingView: readingView.open,
         });
