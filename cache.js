@@ -270,27 +270,70 @@ export async function clearTemporaryChapterCache() {
  * @param {Array} allVersesForBook An array containing all verse objects for the entire book.
  * @returns {Promise<{savedCount: number, error: Error|null}>} The number of chapters successfully saved and any error that occurred.
  */
-export async function saveBookChaptersInBatch(bookId, language, allVersesForBook) {
-    if (!allVersesForBook || allVersesForBook.length === 0) {
-        return { savedCount: 0, error: new Error("No verse data provided to save.") };
+export async function saveBookChaptersInBatch(bookId, language, { verses, commentaries }) {
+    // We allow saving if EITHER verses or commentaries are present
+    if ((!verses || verses.length === 0) && (!commentaries || commentaries.length === 0)) {
+        return { savedCount: 0, error: new Error("No data provided to save.") };
     }
-
-    const chaptersWithData = [...new Set(allVersesForBook.map(v => v.chapter_num))];
-    let putsAttempted = 0;
 
     try {
         const db = await openCacheDB();
         const transaction = db.transaction([CHAPTER_STORE_NAME], 'readwrite');
         const store = transaction.objectStore(CHAPTER_STORE_NAME);
 
-        for (const chapterNum of chaptersWithData) {
-            const versesForThisChapter = allVersesForBook.filter(v => v.chapter_num === chapterNum);
-            if (versesForThisChapter.length > 0) {
-                const key = `${bookId}-${chapterNum}-${language}`;
-                const dataToStore = { data: versesForThisChapter, isDownloaded: true };
-                store.put(dataToStore, key);
-                putsAttempted++;
+        // Identify all unique chapters involved in this update
+        const chapters = new Set();
+        if (verses) verses.forEach(v => chapters.add(v.chapter_num));
+        if (commentaries) commentaries.forEach(c => chapters.add(c.chapter_num));
+
+        let putsAttempted = 0;
+
+        for (const chapterNum of chapters) {
+            const key = `${bookId}-${chapterNum}-${language}`;
+            
+            // 1. Get existing data first (Read-Modify-Write) to preserve what's already there
+            const existingEntry = await new Promise((resolve, reject) => {
+                const req = store.get(key);
+                req.onsuccess = (e) => resolve(e.target.result || { data: [], isDownloaded: true });
+                req.onerror = () => resolve({ data: [], isDownloaded: true }); // Fallback on error
+            });
+
+            // Use a Map to merge by verse_num
+            let chapterDataMap = new Map();
+            
+            // Load existing data into map
+            if (Array.isArray(existingEntry.data)) {
+                existingEntry.data.forEach(v => chapterDataMap.set(v.verse_num, v));
             }
+
+            // 2. Merge NEW Verses (if downloaded)
+            if (verses && verses.length > 0) {
+                verses.filter(v => v.chapter_num === chapterNum).forEach(v => {
+                    const existing = chapterDataMap.get(v.verse_num) || {};
+                    // Overwrite verse text, keep commentary if it exists
+                    chapterDataMap.set(v.verse_num, { ...existing, ...v, chapter_num: chapterNum, verse_num: v.verse_num });
+                });
+            }
+
+            // 3. Merge NEW Commentary (if downloaded)
+            if (commentaries && commentaries.length > 0) {
+                commentaries.filter(c => c.chapter_num === chapterNum).forEach(c => {
+                    const existing = chapterDataMap.get(c.verse_num) || {};
+                    // Overwrite commentary, keep verse text if it exists
+                    chapterDataMap.set(c.verse_num, { 
+                        ...existing, 
+                        commentary_text: c.commentary_text,
+                        chapter_num: chapterNum, 
+                        verse_num: c.verse_num 
+                    });
+                });
+            }
+
+            // 4. Convert map back to array and save
+            const mergedData = Array.from(chapterDataMap.values()).sort((a,b) => a.verse_num - b.verse_num);
+            
+            store.put({ data: mergedData, isDownloaded: true }, key);
+            putsAttempted++;
         }
 
         await new Promise((resolve, reject) => {
