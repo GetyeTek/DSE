@@ -162,7 +162,20 @@ export async function start(resourcesToDownload) {
             }
 
             // --- 2. Books (Bible & Commentary) ---
-            if (flags.bible || flags.commentary) {
+            // Optimization: Determine what actually needs fetching
+            let fetchVerses = flags.bible;
+            let fetchComm = flags.commentary;
+            
+            if (fetchVerses && currentState.downloadedResources[`${lang}-bible`]) {
+                console.log(`[Download] Skipping Verses for ${lang} (Already downloaded)`);
+                fetchVerses = false;
+            }
+            if (fetchComm && currentState.downloadedResources[`${lang}-commentary`]) {
+                console.log(`[Download] Skipping Commentary for ${lang} (Already downloaded)`);
+                fetchComm = false;
+            }
+
+            if (fetchVerses || fetchComm) {
                  const booksToDownload = Object.values(currentState.booksInfo)
                     .filter(book => book?.chapters > 0)
                     .sort((a, b) => a.order - b.order);
@@ -181,17 +194,24 @@ export async function start(resourcesToDownload) {
                     const batch = booksToDownload.slice(i, i + CONCURRENCY_LIMIT);
                     await Promise.all(batch.map(book => 
                         _downloadAndProcessBook(book, lang, overallSuccessTracker, {
-                            includeVerses: flags.bible,
-                            includeCommentary: flags.commentary
+                            includeVerses: fetchVerses,
+                            includeCommentary: fetchComm
                         })
                     ));
                 }
-                
+
+                // Update status only if we actually tried to download something new and succeeded
                 if (!currentState.cancelDownloadFlag && overallSuccessTracker.isSuccess) {
+                    if (fetchVerses) currentState.downloadedResources[`${lang}-bible`] = true;
+                    if (fetchComm) currentState.downloadedResources[`${lang}-commentary`] = true;
+                    // Also mark as true if they were passed in as flags (even if skipped), to ensure consistency
                     if (flags.bible) currentState.downloadedResources[`${lang}-bible`] = true;
                     if (flags.commentary) currentState.downloadedResources[`${lang}-commentary`] = true;
+                    
                     localStorage.setItem('downloadedResources', JSON.stringify(currentState.downloadedResources));
                 }
+            } else if ((flags.bible || flags.commentary) && !flags.ref) {
+                 ui.showTempMessage(`Selected book resources for ${lang.toUpperCase()} are already downloaded.`, 'info');
             }
         }
 
