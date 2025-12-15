@@ -15,12 +15,9 @@ const verseCard = document.getElementById('verseCard');
 const verseCardTitle = verseCard?.querySelector('.verse-title');
 const verseCardText = verseCard?.querySelector('.verse-text');
 const verseCardReference = verseCard?.querySelector('.verse-reference');
-const verseCardMenuDots = document.getElementById('menuDots');
-const verseCardDropdownMenu = document.getElementById('dropdownMenu');
-const verseCardCreateImageBtn = document.getElementById('createImageBtn');
 const verseCardShareBtn = document.getElementById('shareBtn');
 const verseCardSaveBtn = document.getElementById('saveBtn');
-const verseCardCopyBtn = document.getElementById('copyBtn'); // <-- ADD THIS LINE
+const verseCardCopyBtn = document.getElementById('copyBtn');
 
 const fullscreenVerseOverlay = document.getElementById('fullscreenVerse');
 const fullscreenVerseContent = fullscreenVerseOverlay?.querySelector('.fullscreen-content');
@@ -50,14 +47,7 @@ let _renderUserItems = null;
 // PRIVATE UI FUNCTIONS
 // ===================================================================================
 
-/** Hides the three-dot menu dropdown. */
-function _hideDropdownMenu() {
-    if (verseCardDropdownMenu) {
-        verseCardDropdownMenu.classList.remove('active');
-        if (verseCardMenuDots) verseCardMenuDots.setAttribute('aria-expanded', 'false');
-        verseCardDropdownMenu.setAttribute('aria-hidden', 'true');
-    }
-}
+// Dropdown logic removed in UI update
 
 /**
  * Toggles the fullscreen overlay for the Verse of the Day.
@@ -107,9 +97,6 @@ function _renderUI() {
     verseCardText.innerHTML = votdState.text;
     verseCardReference.textContent = votdState.displayRef;
     verseCard.style.display = '';
-    if (verseCardDropdownMenu) {
-        verseCardDropdownMenu.querySelectorAll('.menu-item').forEach(item => item.disabled = false);
-    }
 }
 
 // ===================================================================================
@@ -160,7 +147,6 @@ async function _fetchAndPrepareVotd() {
 
 /** Handles the "Save" button click. */
 async function _handleSaveFavourite() {
-    _hideDropdownMenu();
     if (!votdState.reference) {
         showTempMessage("Cannot save, verse data not loaded.", "error");
         return;
@@ -203,7 +189,6 @@ async function _handleSaveFavourite() {
 
 /** Handles the "Copy" button click. */
 function _handleCopy() {
-    _hideDropdownMenu();
     if (!votdState.text || !votdState.displayRef) {
         showTempMessage('Verse content not available to copy.', 'error');
         return;
@@ -220,7 +205,6 @@ function _handleCopy() {
 
 /** Handles the "Share" button click. */
 async function _handleShare() {
-    _hideDropdownMenu();
     if (!votdState.text || !votdState.displayRef) {
         showTempMessage('Verse content not available to share.', 'error');
         return;
@@ -248,12 +232,8 @@ async function _handleShare() {
 
 /** Handles clicks on the main VOTD card. */
 function _handleCardClick(event) {
-    // Ignore clicks on the menu or its children
-    if (verseCardMenuDots?.contains(event.target) || verseCardDropdownMenu?.contains(event.target)) return;
-    // Ignore clicks on any button inside the card
+    // Ignore clicks on any button inside the card (Share, Copy, Save)
     if (event.target.closest('button')) return;
-
-    _hideDropdownMenu();
     
     // If the reference part is clicked, navigate to the chapter
     if (event.target.closest('.verse-reference')) {
@@ -286,32 +266,11 @@ export function init(dependencies) {
 
     // Set up event listeners
     verseCard?.addEventListener('click', _handleCardClick);
-    verseCardMenuDots?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isActive = verseCardDropdownMenu.classList.toggle('active');
-        verseCardMenuDots.setAttribute('aria-expanded', String(isActive));
-    });
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (event) => {
-        if (verseCardDropdownMenu && 
-            verseCardDropdownMenu.classList.contains('active') && 
-            !verseCardMenuDots.contains(event.target) && 
-            !verseCardDropdownMenu.contains(event.target)) {
-            _hideDropdownMenu();
-        }
-    });
+    
+    // Button listeners
     verseCardSaveBtn?.addEventListener('click', (e) => { e.stopPropagation(); _handleSaveFavourite(); });
     verseCardShareBtn?.addEventListener('click', (e) => { e.stopPropagation(); _handleShare(); });
-    
-    // Wire up the correct copy button
     verseCardCopyBtn?.addEventListener('click', (e) => { e.stopPropagation(); _handleCopy(); });
-    
-    // Make the "Create Image" button show a WIP message
-    verseCardCreateImageBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        _hideDropdownMenu();
-        showTempMessage('Feature coming soon!', 'info');
-    });
     fullscreenVerseCloseBtn?.addEventListener('click', (e) => { e.stopPropagation(); _toggleFullscreen(false); });
     fullscreenVerseOverlay?.addEventListener('click', (e) => { if (e.target === fullscreenVerseOverlay) _toggleFullscreen(false); });
 
