@@ -72,8 +72,8 @@ export const currentState = {
     DOUBLE_TAP_THRESHOLD: 300, // <--- ADDED LINE: Max time between taps for double tap (ms)
 
     // --- Download State --- <--- ADDED COMMENTS
-    downloadedLanguages: JSON.parse(localStorage.getItem('downloadedLanguages') || '[]'), // Array of language codes fully downloaded
-    downloadedBooksByLanguage: JSON.parse(localStorage.getItem('downloadedBooksByLanguage') || '{}'), // { 'lang': ['bookId1', 'bookId2'], ...}
+    downloadedResources: JSON.parse(localStorage.getItem('downloadedResources') || '{}'), // { 'am-bible': true, 'en-ref': false, ... }
+    downloadedBooksByLanguage: JSON.parse(localStorage.getItem('downloadedBooksByLanguage') || '{}'),
     isDownloading: false,
     downloadProgress: {
         language: null,
